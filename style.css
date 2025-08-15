@@ -1,0 +1,55 @@
+/* Color variables */
+:root {
+    --background: #fef6e4;
+    --headline: #001858;
+    --paragraph: #172c66;
+    --button: #f582ae;
+    --button-text: #001858;
+    --main: #f3d2c1;
+    --secondary: #8bd3dd;
+    --tertiary: #f582ae;
+  }
+  
+  /* Utility Classes */
+  .bg-background { background-color: var(--background); }
+  .bg-main { background-color: var(--main); }
+  .bg-secondary { background-color: var(--secondary); }
+  .bg-tertiary { background-color: var(--tertiary); }
+  
+  .btn {
+    background-color: var(--button);
+    color: var(--button-text);
+    padding: 0.5rem 1.2rem;
+    border-radius: 9999px;
+    font-weight: bold;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    transition: transform 0.2s ease;
+  }
+  .btn:hover {
+    transform: scale(1.05);
+  }
+  
+  .btn-primary {
+    @apply btn text-white bg-[#f582ae];
+  }
+  
+  /* 卡片樣式 */
+  .card {
+    @apply text-center rounded-xl p-6 shadow transition pop;
+  }
+  
+  /* 動畫 */
+  @keyframes wavy {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+  }
+  .animate-wavy {
+    animation: wavy 2s ease-in-out infinite;
+  }
+  .pop {
+    transition: all 0.2s ease;
+  }
+  .pop:hover {
+    transform: scale(1.05);
+  }
+  

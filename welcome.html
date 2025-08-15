@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>🐾 歡迎加入 Pawblish！</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root{
+      --pink:#f582ae; --cream:#fef6e4; --blue:#8bd3dd; --dark:#001858;
+    }
+    body { background-color: var(--cream); color: var(--dark); font-family: 'Nunito', sans-serif; }
+    .floating{animation: float 7s ease-in-out infinite}
+    @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+  </style>
+</head>
+<body class="px-6 pt-20 pb-10">
+  <main class="max-w-6xl mx-auto">
+    <section class="grid md:grid-cols-2 items-center gap-10 bg-white/70 backdrop-blur rounded-3xl p-8 shadow-xl border border-white/60">
+      <div>
+        <div class="inline-flex gap-2 mb-3">
+          <span class="px-3 py-1 rounded-full text-sm font-bold bg-white shadow border">🎉 已完成註冊</span>
+          <span class="px-3 py-1 rounded-full text-sm font-bold bg-white shadow border">🚀 啟動創作旅程</span>
+        </div>
+        <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight mb-4 text-[#f582ae]">歡迎加入 Pawblish！</h1>
+        <p class="text-lg md:text-xl text-[#172c66] mb-6">你的帳號已建立成功，現在就用 AI 助力，讓每一個靈感都能發光 ✨</p>
+
+        <ul class="grid grid-cols-2 gap-3 text-sm text-[#001858] mb-6">
+          <li class="flex items-center gap-2 bg-white rounded-xl px-3 py-2 shadow"><span>🪄</span><span>AI 腳本生成</span></li>
+          <li class="flex items-center gap-2 bg-white rounded-xl px-3 py-2 shadow"><span>📈</span><span>熱門趨勢雷達</span></li>
+          <li class="flex items-center gap-2 bg-white rounded-xl px-3 py-2 shadow"><span>🗓️</span><span>內容排程日曆</span></li>
+          <li class="flex items-center gap-2 bg-white rounded-xl px-3 py-2 shadow"><span>📊</span><span>表現分析報表</span></li>
+        </ul>
+
+        <div class="flex flex-wrap gap-3">
+          <a href="member.html" class="bg-[#f582ae] text-white px-6 py-3 rounded-full font-extrabold shadow hover:translate-y-[-2px] hover:shadow-lg transition inline-flex items-center gap-2"><span>🐾</span>前往會員中心</a>
+          <a href="script.html" class="bg-[#8bd3dd] text-[#001858] px-6 py-3 rounded-full font-extrabold shadow hover:translate-y-[-2px] hover:shadow-lg transition inline-flex items-center gap-2"><span>✍️</span>開始創作</a>
+        </div>
+      </div>
+
+      <div class="relative h-[300px] md:h-[420px]">
+        <div class="absolute inset-0 rounded-full bg-gradient-to-br from-[#8bd3dd]/50 to-[#f582ae]/50 blur-2xl"></div>
+        <div class="relative mx-auto w-64 h-64 md:w-80 md:h-80 rounded-full bg-white/80 border shadow-2xl flex items-center justify-center floating">
+          <div class="text-[5rem] md:text-[7rem]">🐶</div>
+        </div>
+        <div class="absolute -top-4 right-6 bg-white rounded-full px-3 py-1 shadow text-sm font-bold">Bobo 波波</div>
+        <div class="absolute bottom-6 left-2 md:left-8 bg-white rounded-xl px-3 py-2 shadow text-sm">我是你的創作搭檔！</div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="text-center text-sm text-[#001858]/60 mt-10 py-6">
+    <p>© 2025 Pawblish. 你的每一步成長，我們都看得見 ✨</p>
+  </footer>
+</body>
+</html>
+  

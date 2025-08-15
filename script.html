@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PawScript Studio - 腳本工坊</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'paw-pink': '#F582AE',
+                        'paw-blue': '#8BD3DD',
+                        'paw-cream': '#FEF6E4',
+                        'paw-peach': '#F3D2C1',
+                        'paw-dark': '#001858',
+                        'paw-text': '#172C66',
+                        'paw-light': '#F3F3F3',
+                    },
+                    fontFamily: {
+                        sans: ['Noto Sans TC', 'sans-serif'],
+                    },
+                    animation: {
+                        'bounce-sm': 'bounce-sm 1s ease-in-out infinite',
+                        'jump': 'jump 0.5s ease-in-out',
+                        'spin-slow': 'spin 3s linear infinite',
+                        'wiggle': 'wiggle 1s ease-in-out infinite',
+                        'float': 'float 3s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        'bounce-sm': {
+                            '0%, 100%': { transform: 'translateY(-5%)' },
+                            '50%': { transform: 'translateY(0)' },
+                        },
+                        'jump': {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-15px)' },
+                        },
+                        'wiggle': {
+                            '0%, 100%': { transform: 'rotate(-3deg)' },
+                            '50%': { transform: 'rotate(3deg)' },
+                        },
+                        'float': {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background: linear-gradient(to bottom, #FEF6E4, #F3D2C1);
+            min-height: 100vh;
+            color: #172C66;
+            /* 確保錨點/內部滾動不被固定導覽列遮擋 */
+            scroll-padding-top: var(--navbar-height, 80px);
+        }
+        /* 預留導覽列高度，避免載入時被遮住 */
+        #navbar-container { height: var(--navbar-height, 70px); display: block; }
+        .card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+            border: 1px solid rgba(243, 210, 193, 0.5);
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.15);
+        }
+        .bubble {
+            position: relative;
+            border-radius: 20px;
+            padding: 15px;
+            max-width: 80%;
+        }
+        .bubble:after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 0;
+            border: 15px solid transparent;
+        }
+        .bubble-left:after {
+            left: -15px;
+            top: 20px;
+            border-right-color: #F3D2C1;
+            border-left: 0;
+        }
+        .bubble-right:after {
+            right: -15px;
+            top: 20px;
+            border-left-color: #F582AE;
+            border-right: 0;
+            opacity: 0.2;
+        }
+        .wheel-container {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            margin: 0 auto;
+        }
+        .wheel {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            position: relative;
+            overflow: hidden;
+            border: 8px solid #FEF6E4;
+            box-shadow: 0 0 0 5px #8BD3DD, 0 0 30px rgba(0,0,0,0.1);
+            transition: transform 4s cubic-bezier(0.17, 0.67, 0.14, 0.93);
+        }
+        .wheel-section {
+            position: absolute;
+            width: 50%;
+            height: 50%;
+            transform-origin: bottom right;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 20px;
+            box-sizing: border-box;
+            font-weight: bold;
+            color: white;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        }
+        .wheel-pointer {
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 40px;
+            z-index: 10;
+        }
+        .character {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .character:hover {
+            transform: scale(1.1);
+        }
+        .character.active {
+            animation: jump 0.8s ease;
+            filter: drop-shadow(0 5px 15px rgba(0,0,0,0.2));
+        }
+        .badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            margin-right: 8px;
+            margin-bottom: 8px;
+        }
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: #F582AE;
+            border-radius: 50%;
+            animation: fall linear forwards;
+        }
+        @keyframes fall {
+            to {
+                transform: translateY(100vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+        .progress-bar {
+            height: 10px;
+            border-radius: 5px;
+            background: #E0E0E0;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #F582AE, #8BD3DD);
+            border-radius: 5px;
+            transition: width 0.5s ease;
+        }
+        .btn-gradient {
+            background: linear-gradient(90deg, #F582AE, #8BD3DD);
+            color: white;
+            border: none;
+        }
+        .btn-gradient:hover {
+            background: linear-gradient(90deg, #E4729E, #7BC3CD);
+        }
+        .nav-gradient {
+            background: linear-gradient(90deg, rgba(245,130,174,0.1), rgba(139,211,221,0.1));
+            backdrop-filter: blur(10px);
+        }
+    </style>
+</head>
+<body class="font-sans text-paw-text">
+    <!-- 導航欄 -->
+    <div id="navbar-container"></div>
+    <script>
+      fetch('navbar.html')
+        .then(response => response.text())
+        .then(data => document.getElementById('navbar-container').innerHTML = data);
+    </script>
+    <div class="container mx-auto px-4 py-8">
+        <!-- 頁面標題 -->
+        <div class="text-center mb-12">
+            <h1 class="text-4xl md:text-5xl font-bold mb-4 animate__animated animate__fadeInDown bg-clip-text text-transparent bg-gradient-to-r from-paw-pink to-paw-blue">腳本工坊升級版</h1>
+            <p class="text-xl text-paw-text max-w-3xl mx-auto animate__animated animate__fadeInUp animate__delay-1s">
+                「靈感是開端、腳本是載體、創作是冒險」— 探索無限創作可能的遊樂場
+            </p>
+            <!-- 快速功能入口 -->
+            <div class="mt-6 flex flex-wrap gap-3 justify-center">
+                <a href="trend.html" class="btn-gradient px-4 py-2 rounded-full font-bold hover:opacity-90 transition inline-flex items-center gap-2"><i class="fas fa-fire"></i> 熱門趨勢</a>
+                <a href="planner.html" class="bg-white border border-paw-peach px-4 py-2 rounded-full font-bold hover:bg-paw-peach/30 transition inline-flex items-center gap-2"><i class="fas fa-calendar-alt"></i> 內容排程</a>
+                <a href="assistant.html" class="bg-white border border-paw-peach px-4 py-2 rounded-full font-bold hover:bg-paw-peach/30 transition inline-flex items-center gap-2"><i class="fas fa-robot"></i> AI 小幫手</a>
+                <a href="pawmetrics.html" class="bg-white border border-paw-peach px-4 py-2 rounded-full font-bold hover:bg-paw-peach/30 transition inline-flex items-center gap-2"><i class="fas fa-chart-pie"></i> 數據報表</a>
+            </div>
+        </div>
+
+        <!-- 今日任務卡 -->
+        <div class="card p-6 mb-12 bg-gradient-to-r from-paw-blue/20 to-paw-pink/20 animate__animated animate__fadeInUp">
+            <div class="flex items-center">
+                <div class="bg-white rounded-full p-3 mr-4 shadow-md">
+                    <i class="fas fa-tasks text-2xl text-paw-pink"></i>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold mb-1">今日創作挑戰 ✨</h3>
+                    <p class="text-paw-text">完成任務可獲得 <span class="font-bold text-paw-blue">「旅行筆記家」</span> 貼紙！</p>
+                </div>
+            </div>
+            <div class="mt-4 p-4 bg-white rounded-xl">
+                <p class="text-lg font-medium mb-3">挑戰任務：<span class="text-paw-blue font-bold">寫一篇以旅遊為主題、加入一句生活金句的短文貼文</span></p>
+                <div class="flex items-center">
+                    <div class="progress-bar flex-grow mr-4">
+                        <div class="progress-fill" style="width: 40%"></div>
+                    </div>
+                    <span class="text-sm font-medium">2/5 完成度</span>
+                </div>
+            </div>
+            <div class="mt-4 flex justify-end">
+                <button id="start-challenge" class="btn-gradient px-5 py-2 rounded-full font-bold hover:opacity-90 transition animate-pulse">開始挑戰</button>
+                <!-- ✅ 加上 id="start-challenge" 是為了 scrollIntoView --> 
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-16">
+            <!-- 左側功能區 -->
+            <div class="lg:col-span-2 space-y-8">
+                <!-- 靈感轉盤區 -->
+                <div class="card p-6 animate__animated animate__fadeInLeft">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold flex items-center">
+                            <i class="fas fa-dharmachakra text-paw-pink mr-2"></i> 靈感轉盤
+                        </h2>
+                        <button id="spin-btn" class="btn-gradient px-4 py-2 rounded-full text-sm font-bold hover:opacity-90 transition">轉動靈感</button>
+                    </div>
+                    
+                    <div class="wheel-container">
+                        <div class="wheel" id="wheel">
+                            <div class="wheel-section" style="background-color: #F582AE; transform: rotate(0deg);">主題：旅行</div>
+                            <div class="wheel-section" style="background-color: #8BD3DD; transform: rotate(90deg);">情境：冒險</div>
+                            <div class="wheel-section" style="background-color: #F3D2C1; transform: rotate(180deg);">風格：搞笑</div>
+                            <div class="wheel-section" style="background-color: #B8B8FF; transform: rotate(270deg);">主題：美食</div>
+                        </div>
+                        <div class="wheel-pointer">
+                            <svg viewBox="0 0 100 100" class="text-paw-pink">
+                                <polygon points="50,0 65,50 50,100 35,50" fill="currentColor"/>
+                            </svg>
+                        </div>
+                    </div>
+                    
+                    <div id="wheel-result" class="mt-6 text-center hidden animate__animated">
+                        <p class="text-xl font-bold mb-2">你的靈感組合：</p>
+                        <div class="bg-white p-4 rounded-xl inline-block">
+                            <span class="text-paw-pink font-bold text-lg">主題：旅行</span> × 
+                            <span class="text-paw-blue font-bold text-lg">情境：冒險</span> × 
+                            <span class="text-paw-peach font-bold text-lg">風格：勵志</span>
+                        </div>
+                      <button id="apply-inspiration" class="mt-4 btn-gradient px-5 py-2 rounded-full font-bold hover:opacity-90 transition">套用此靈感</button>
+                    </div>
+                </div>
+                
+                <!-- 腳本創作表單 -->
+                <div id="form-section" class="card p-6 animate__animated animate__fadeInLeft animate__delay-1s">
+                  <!-- ✅ 加上 id="form-section" 是為了 scrollIntoView -->
+
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold flex items-center">
+                            <i class="fas fa-pen text-paw-blue mr-2"></i> 腳本創作表單
+                        </h2>
+                        <div class="flex space-x-2">
+                            <button class="bg-white border border-paw-peach px-3 py-1 rounded-full text-sm hover:bg-paw-peach/30 transition">
+                                <i class="fas fa-save mr-1"></i> 儲存草稿
+                            </button>
+                            <button class="bg-white border border-paw-peach px-3 py-1 rounded-full text-sm hover:bg-paw-peach/30 transition">
+                                <i class="fas fa-redo mr-1"></i> 重置
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-6">
+                        <label class="block font-medium mb-2">標題</label>
+                        <input type="text" id="script-title" class="w-full p-3 border ..." placeholder="輸入腳本標題...">
+                        <!-- ✅ 加上 id="script-title"，方便 JS 來存取這個欄位 -->
+                                            </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                        <div>
+                            <label class="block font-medium mb-2">平台類型</label>
+                            <select class="w-full p-3 border border-paw-peach rounded-lg focus:ring-2 focus:ring-paw-pink focus:border-transparent">
+                                <option>Instagram</option>
+                                <option>小紅書</option>
+                                <option>TikTok</option>
+                                <option>YouTube</option>
+                                <option>Facebook</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block font-medium mb-2">腳本類型</label>
+                            <select class="w-full p-3 border border-paw-peach rounded-lg focus:ring-2 focus:ring-paw-pink focus:border-transparent">
+                                <option>短影片/Vlog</option>
+                                <option>圖文貼文</option>
+                                <option>直播腳本</option>
+                                <option>廣告腳本</option>
+                                <option>教學腳本</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-6">
+                        <label class="block font-medium mb-2">腳本內容</label>
+                        <textarea class="w-full h-40 p-3 border border-paw-peach rounded-lg focus:ring-2 focus:ring-paw-pink focus:border-transparent" placeholder="開始撰寫你的腳本..."></textarea>
+                        <div class="mt-2 flex justify-end">
+                            <button class="text-sm bg-white border border-paw-peach px-3 py-1 rounded-full hover:bg-paw-peach/30 transition">
+                                <i class="fas fa-smile mr-1"></i> 插入表情
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- AI 建議泡泡 -->
+                    <div class="bubble bubble-left bg-paw-peach/40 mt-4 animate__animated animate__fadeIn">
+                        <div class="flex items-start">
+                            <div class="w-8 h-8 rounded-full bg-paw-pink flex items-center justify-center text-white mr-3">
+                                <i class="fas fa-lightbulb"></i>
+                            </div>
+                            <div>
+                                <p class="font-bold text-paw-text">咚咚的建議：</p>
+                                <p>可以考慮在開頭加入一個吸引人的問題，例如「你知道旅行中最重要的是什麼嗎？」來引起觀眾興趣！</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-6 flex justify-between">
+                        <button class="bg-paw-peach text-white px-5 py-2 rounded-full font-bold hover:bg-opacity-80 transition">預覽</button>
+                        <a href="planner.html" class="btn-gradient px-5 py-2 rounded-full font-bold hover:opacity-90 transition flex items-center">
+                            一鍵排程 <i class="fas fa-arrow-right ml-2"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- AI 對話創作區 -->
+                <div class="card p-6 animate__animated animate__fadeInLeft animate__delay-2s">
+                    <h2 class="text-2xl font-bold flex items-center mb-6">
+                        <i class="fas fa-comments text-paw-blue mr-2"></i> AI 對話生成劇情
+                    </h2>
+                    
+                    <div class="flex mb-4 space-x-4">
+                        <button class="btn-gradient px-4 py-2 rounded-full text-sm font-bold hover:opacity-90 transition">雙人對話</button>
+                        <button class="bg-white border border-paw-peach px-4 py-2 rounded-full text-sm font-bold hover:bg-paw-peach/30 transition">客戶問答</button>
+                        <button class="bg-white border border-paw-peach px-4 py-2 rounded-full text-sm font-bold hover:bg-paw-peach/30 transition">角色扮演</button>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <!-- 使用者訊息 -->
+                        <div class="flex justify-end">
+                            <div class="bubble bubble-right bg-paw-pink/20">
+                                <p>我想寫一個關於咖啡店創業的故事，兩位合夥人正在討論開店計畫</p>
+                            </div>
+                        </div>
+                        
+                        <!-- AI 訊息 -->
+                        <div class="flex">
+                            <div class="w-10 h-10 rounded-full bg-paw-blue flex items-center justify-center text-white mr-3 flex-shrink-0">
+                                <i class="fas fa-robot"></i>
+                            </div>
+                            <div class="bubble bubble-left bg-paw-peach/40">
+                                <p class="font-bold mb-1">角色A（創業者）：</p>
+                                <p>我認為我們的咖啡店應該主打特色手沖咖啡，現在市場上這種專業咖啡店還不多。</p>
+                                <p class="font-bold mt-3 mb-1">角色B（合夥人）：</p>
+                                <p>但手沖咖啡需要更多時間，我們的翻桌率會受影響。要不要考慮加入一些快速咖啡選項？</p>
+                                <div class="mt-3 flex space-x-2">
+                                    <button class="text-sm bg-white border border-paw-peach px-2 py-1 rounded-full hover:bg-paw-blue/20 transition">繼續對話</button>
+                                    <button class="text-sm bg-white border border-paw-peach px-2 py-1 rounded-full hover:bg-paw-pink/20 transition">儲存腳本</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 右側功能區 -->
+            <div class="space-y-8">
+                <!-- 角色語氣切換 -->
+                <div class="card p-6 animate__animated animate__fadeInRight">
+                    <h2 class="text-2xl font-bold flex items-center mb-6">
+                        <i class="fas fa-user-circle text-paw-pink mr-2"></i> 創作風格人格切換
+                    </h2>
+                    
+                    <div class="grid grid-cols-3 gap-4 mb-6">
+                        <div class="character text-center active" data-character="dongdong">
+                            <div class="w-20 h-20 mx-auto rounded-full bg-gradient-to-br from-paw-pink to-paw-blue flex items-center justify-center text-white text-4xl mb-2">
+                                <i class="fas fa-egg animate-float"></i>
+                            </div>
+                            <p class="font-bold">咚咚</p>
+                            <p class="text-sm text-paw-text">溫柔可愛</p>
+                        </div>
+                        <div class="character text-center" data-character="lingling">
+                            <div class="w-20 h-20 mx-auto rounded-full bg-gradient-to-br from-paw-blue to-paw-dark flex items-center justify-center text-white text-4xl mb-2">
+                                <i class="fas fa-star animate-float"></i>
+                            </div>
+                            <p class="font-bold">鈴鈴</p>
+                            <p class="text-sm text-paw-text">犀利專業</p>
+                        </div>
+                        <div class="character text-center" data-character="tantan">
+                            <div class="w-20 h-20 mx-auto rounded-full bg-gradient-to-br from-paw-pink to-paw-peach flex items-center justify-center text-white text-4xl mb-2">
+                                <i class="fas fa-bolt animate-float"></i>
+                            </div>
+                            <p class="font-bold">探探</p>
+                            <p class="text-sm text-paw-text">潮流風格</p>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-paw-peach/40 p-4 rounded-xl">
+                        <p class="font-bold text-paw-text mb-2">咚咚說：</p>
+                        <p class="animate__animated animate__fadeIn">「今天的你一定會寫出閃亮亮的靈感哦✨ 需要幫忙隨時告訴我！」</p>
+                    </div>
+                </div>
+                
+                <!-- 成就系統 -->
+                <div class="card p-6 animate__animated animate__fadeInRight animate__delay-1s">
+                    <h2 class="text-2xl font-bold flex items-center mb-6">
+                        <i class="fas fa-trophy text-paw-pink mr-2"></i> 成就徽章系統
+                    </h2>
+                    
+                    <div class="grid grid-cols-2 gap-4 mb-6">
+                        <div class="bg-white p-4 rounded-xl text-center border-2 border-paw-pink">
+                            <div class="w-12 h-12 mx-auto bg-paw-pink rounded-full flex items-center justify-center text-white mb-2">
+                                <i class="fas fa-medal"></i>
+                            </div>
+                            <p class="font-bold">小小編劇人</p>
+                            <p class="text-sm text-paw-text">完成第一篇腳本</p>
+                            <div class="mt-2">
+                                <span class="badge bg-green-100 text-green-800">已解鎖</span>
+                            </div>
+                        </div>
+                        <div class="bg-white p-4 rounded-xl text-center border-2 border-paw-peach">
+                            <div class="w-12 h-12 mx-auto bg-paw-peach rounded-full flex items-center justify-center text-white mb-2">
+                                <i class="fas fa-compass"></i>
+                            </div>
+                            <p class="font-bold">轉盤探險家</p>
+                            <p class="text-sm text-paw-text">使用靈感轉盤超過5次</p>
+                            <div class="mt-2">
+                                <span class="badge bg-yellow-100 text-yellow-800">3/5</span>
+                            </div>
+                        </div>
+                        <div class="bg-white p-4 rounded-xl text-center border-2 border-paw-peach">
+                            <div class="w-12 h-12 mx-auto bg-paw-peach rounded-full flex items-center justify-center text-white mb-2">
+                                <i class="fas fa-heart"></i>
+                            </div>
+                            <p class="font-bold">咚咚的朋友</p>
+                            <p class="text-sm text-paw-text">使用咚咚語氣寫作超過3篇</p>
+                            <div class="mt-2">
+                                <span class="badge bg-yellow-100 text-yellow-800">1/3</span>
+                            </div>
+                        </div>
+                        <div class="bg-white p-4 rounded-xl text-center border-2 border-paw-peach">
+                            <div class="w-12 h-12 mx-auto bg-paw-peach rounded-full flex items-center justify-center text-white mb-2">
+                                <i class="fas fa-calendar-check"></i>
+                            </div>
+                            <p class="font-bold">任務狂人</p>
+                            <p class="text-sm text-paw-text">連續完成每日任務3天</p>
+                            <div class="mt-2">
+                                <span class="badge bg-yellow-100 text-yellow-800">1/3</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button class="w-full btn-gradient py-2 rounded-full font-bold hover:opacity-90 transition">查看所有成就</button>
+                </div>
+                
+                <!-- 模板範例區 -->
+                <div class="card p-6 animate__animated animate__fadeInRight animate__delay-2s">
+                    <h2 class="text-2xl font-bold flex items-center mb-6">
+                        <i class="fas fa-clone text-paw-blue mr-2"></i> 腳本樣板範例
+                    </h2>
+                    
+                    <div class="space-y-4">
+                        <div class="bg-white p-4 rounded-xl border border-paw-peach hover:border-paw-pink transition cursor-pointer">
+                            <div class="flex items-center mb-2">
+                                <div class="w-8 h-8 rounded-full bg-gradient-to-br from-paw-pink to-purple-500 flex items-center justify-center text-white mr-2">
+                                    <i class="fab fa-instagram"></i>
+                                </div>
+                                <p class="font-bold">Instagram Reels 模板</p>
+                            </div>
+                            <p class="text-sm text-paw-text">短影片拍攝結構，包含開場、轉場、CTA等元素</p>
+                        </div>
+                        
+                        <div class="bg-white p-4 rounded-xl border border-paw-peach hover:border-paw-pink transition cursor-pointer">
+                            <div class="flex items-center mb-2">
+                                <div class="w-8 h-8 rounded-full bg-gradient-to-br from-paw-pink to-red-500 flex items-center justify-center text-white mr-2">
+                                    <i class="fab fa-pinterest"></i>
+                                </div>
+                                <p class="font-bold">小紅書圖文模板</p>
+                            </div>
+                            <p class="text-sm text-paw-text">封面設計要點、標題技巧、內容結構</p>
+                        </div>
+                        
+                        <div class="bg-white p-4 rounded-xl border border-paw-peach hover:border-paw-pink transition cursor-pointer">
+                            <div class="flex items-center mb-2">
+                                <div class="w-8 h-8 rounded-full bg-gradient-to-br from-paw-blue to-black flex items-center justify-center text-white mr-2">
+                                    <i class="fab fa-tiktok"></i>
+                                </div>
+                                <p class="font-bold">TikTok 挑戰模板</p>
+                            </div>
+                            <p class="text-sm text-paw-text">熱門挑戰腳本結構，包含音樂、動作、標籤</p>
+                        </div>
+                    </div>
+                    
+                    <button class="w-full mt-4 bg-white border border-paw-peach py-2 rounded-full font-bold hover:bg-paw-blue/20 transition">查看更多模板</button>
+                </div>
+                
+                <!-- 創作學院 -->
+                <div class="card p-6 animate__animated animate__fadeInRight animate__delay-3s">
+                    <h2 class="text-2xl font-bold flex items-center mb-6">
+                        <i class="fas fa-graduation-cap text-paw-blue mr-2"></i> 咚咚創作學院
+                    </h2>
+                    
+                    <div class="space-y-3">
+                        <div class="flex items-center p-3 bg-white rounded-lg hover:bg-paw-peach/30 transition cursor-pointer">
+                            <div class="w-10 h-10 rounded-full bg-paw-blue flex items-center justify-center text-white mr-3">
+                                <i class="fas fa-heading"></i>
+                            </div>
+                            <p class="font-medium">標題優化5大技巧</p>
+                        </div>
+                        
+                        <div class="flex items-center p-3 bg-white rounded-lg hover:bg-paw-peach/30 transition cursor-pointer">
+                            <div class="w-10 h-10 rounded-full bg-paw-pink flex items-center justify-center text-white mr-3">
+                                <i class="fas fa-play-circle"></i>
+                            </div>
+                            <p class="font-medium">開場句設計黃金法則</p>
+                        </div>
+                        
+                        <div class="flex items-center p-3 bg-white rounded-lg hover:bg-paw-peach/30 transition cursor-pointer">
+                            <div class="w-10 h-10 rounded-full bg-gradient-to-br from-paw-pink to-paw-blue flex items-center justify-center text-white mr-3">
+                                <i class="fas fa-comment-dots"></i>
+                            </div>
+                            <p class="font-medium">留言誘導技巧大全</p>
+                        </div>
+                    </div>
+                    
+                    <button class="w-full mt-4 btn-gradient py-2 rounded-full font-bold hover:opacity-90 transition">進入學院學習</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 頁尾語錄 -->
+        <div class="text-center py-8 text-paw-text animate__animated animate__fadeIn">
+            <p class="text-lg italic">「靈感像腳印，每寫一篇，Pawblish 就記得你的一步一腳印呢🐾」</p>
+            <p class="mt-2">「創作就是這樣：不完美，但有溫度！」</p>
+        </div>
+    </div>
+
+    <script>
+      // 套用靈感按鈕：將靈感文字寫入標題並捲動至表單
+document.getElementById('apply-inspiration').addEventListener('click', function () {
+    // 取得靈感區塊內的文字
+    const inspirationBox = document.querySelector('#wheel-result div.bg-white');
+    const inspirationText = inspirationBox.textContent.replace(/\s+/g, '').replace(/×/g, ' × '); // 格式化空白
+
+    // 寫入到標題欄位
+    document.getElementById('script-title').value = inspirationText;
+
+    // 滑動至表單區塊
+    document.getElementById('form-section').scrollIntoView({
+        behavior: 'smooth'
+    });
+});
+
+        // 角色切換功能
+        document.querySelectorAll('.character').forEach(character => {
+            character.addEventListener('click', function() {
+                // 移除所有active狀態
+                document.querySelectorAll('.character').forEach(c => {
+                    c.classList.remove('active');
+                });
+                
+                // 添加當前active狀態
+                this.classList.add('active');
+                
+                // 更新角色話語
+                const characterType = this.getAttribute('data-character');
+                let message = "";
+                
+                if(characterType === 'dongdong') {
+                    message = "「今天的你一定會寫出閃亮亮的靈感哦✨ 需要幫忙隨時告訴我！」";
+                } else if(characterType === 'lingling') {
+                    message = "「根據數據分析，這種類型的腳本在過去30天內表現最佳，我建議這樣調整...」";
+                } else {
+                    message = "「你的觀眾現在正想看這種內容，跟我走就對了！🔥」";
+                }
+                
+                document.querySelector('.bg-paw-peach\\/40 p:last-child').textContent = message;
+            });
+        });
+        
+        // 轉盤旋轉功能
+        document.getElementById('spin-btn').addEventListener('click', function() {
+            const wheel = document.getElementById('wheel');
+            const result = document.getElementById('wheel-result');
+            
+            // 旋轉轉盤
+            wheel.style.transform = 'rotate(1260deg)'; // 3.5圈 + 額外角度
+            
+            // 顯示結果
+            setTimeout(() => {
+                result.classList.remove('hidden');
+                result.classList.add('animate__fadeIn');
+                
+                // 添加慶祝效果
+                createConfetti();
+            }, 4000);
+        });
+        
+        // 慶祝彩帶效果
+        function createConfetti() {
+            const container = document.querySelector('.wheel-container');
+            const colors = ['#F582AE', '#8BD3DD', '#F3D2C1', '#B8B8FF'];
+            
+            for(let i = 0; i < 50; i++) {
+                const confetti = document.createElement('div');
+                confetti.classList.add('confetti');
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.left = `${Math.random() * 100}%`;
+                confetti.style.animationDelay = `${Math.random() * 2}s`;
+                confetti.style.width = `${Math.random() * 10 + 5}px`;
+                confetti.style.height = confetti.style.width;
+                
+                container.appendChild(confetti);
+                
+                // 動畫結束後移除元素
+                setTimeout(() => {
+                    confetti.remove();
+                }, 5000);
+            }
+        }
+        
+        // 初始動畫
+        document.addEventListener('DOMContentLoaded', function() {
+            // 延遲觸發咚咚動畫
+            setTimeout(() => {
+                document.querySelector('[data-character="dongdong"]').classList.add('animate__pulse');
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

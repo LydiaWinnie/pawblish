@@ -1,0 +1,11 @@
+@font-face {
+  font-family: 'jf open 粉圓';
+  src: url('/jf-openhuninn-2.1.ttf') format('ttf'),
+       url('/jf-openhuninn-2.1.ttf') format('ttf');
+  font-weight: normal;
+  font-style: normal;
+}
+
+body {
+  font-family: 'jf open 粉圓', sans-serif;
+}

@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📆 汪咕的內容排程室 | Pawblish</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'paw-blue': '#8BD3DD',
+                        'paw-pink': '#F582AE',
+                        'paw-cream': '#FEF6E4',
+                        'paw-peach': '#F3D2C1',
+                        'paw-dark': '#001858'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap');
+        
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background: linear-gradient(135deg, #fef6e4 0%, #f3d2c1 100%);
+            color: #001858;
+            min-height: 100vh;
+            /* 避免固定導覽列遮擋錨點/標題 */
+            scroll-padding-top: var(--navbar-height, 80px);
+        }
+        /* 預留導覽列高度，避免進場時被擋住 */
+        #navbar-container { height: var(--navbar-height, 70px); display: block; }
+        
+        .paw-gradient-bg {
+            background: linear-gradient(135deg, #f582ae 0%, #8bd3dd 100%);
+        }
+        
+        .status-todo { background-color: #e2e8f0; }
+        .status-draft { background-color: #fde68a; }
+        .status-scheduled { background-color: #a7f3d0; }
+        .status-published { background-color: #bfdbfe; }
+        
+        .calendar-day {
+            transition: all 0.3s ease;
+        }
+        
+        .calendar-day:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .calendar-day.active {
+            background-color: #fef6e4;
+            border: 2px solid #f582ae;
+        }
+        
+        .idea-card {
+            transition: all 0.3s ease;
+            cursor: grab;
+        }
+        
+        .idea-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .badge-chip {
+            background: linear-gradient(135deg, #f582ae 0%, #8bd3dd 100%);
+            color: white;
+            border-radius: 20px;
+            padding: 2px 12px;
+            display: inline-block;
+            font-size: 0.8rem;
+            margin: 0 3px;
+        }
+        
+        .floating {
+            animation: floating 3s ease-in-out infinite;
+        }
+        
+        @keyframes floating {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-8px); }
+            100% { transform: translateY(0px); }
+        }
+        
+        .pulse {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .wongoo-bubble {
+            position: relative;
+            border-radius: 20px;
+            background: white;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .wongoo-bubble::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 20px;
+            border-width: 10px 10px 0;
+            border-style: solid;
+            border-color: white transparent transparent;
+        }
+        
+        .content-item {
+            border-left: 4px solid;
+            transition: all 0.3s ease;
+        }
+        
+        .content-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+        }
+    </style>
+</head>
+<body>
+    <div id="navbar-container"></div>
+<script>
+  fetch('navbar.html')
+    .then(response => response.text())
+    .then(data => document.getElementById('navbar-container').innerHTML = data);
+</script>
+    <!-- 主內容區 -->
+    <div class="max-w-7xl mx-auto px-4 py-8">
+        <!-- 頁面標題 -->
+        <div class="text-center mb-10">
+            <h1 class="text-3xl md:text-4xl font-bold mb-3 flex items-center justify-center">
+                <span class="floating mr-4 text-4xl">🐻</span>
+                📆 汪咕的內容排程室
+                <span class="floating ml-4 text-4xl">📅</span>
+            </h1>
+            <p class="text-lg text-paw-dark/80 max-w-2xl mx-auto">
+                把靈感排進行事曆，創作再也不拖延！讓汪咕幫你規劃內容創作旅程
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- 左側區塊 -->
+            <div class="lg:col-span-2 space-y-8">
+                <!-- 快速排程表單 -->
+                <section id="form-section" class="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-white">
+                    <div class="flex items-center mb-6">
+                        <h2 class="text-xl font-bold flex items-center">
+                            <i class="fas fa-plus-circle text-paw-pink mr-2"></i>
+                            快速新增內容
+                        </h2>
+                        <div class="ml-auto relative">
+                            <div class="wongoo-bubble px-4 py-3 max-w-xs">
+                                <p class="text-sm">填寫完記得按加入排程喔！汪咕～</p>
+                            </div>
+                            <div class="absolute -left-4 -top-8">
+                                <span class="text-4xl">🐻</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <form class="space-y-4">
+                        <div>
+                            <label class="block font-medium mb-2">主題</label>
+                            <input type="text" placeholder="輸入內容主題..." class="w-full p-3 rounded-lg border border-paw-pink/30 focus:border-paw-pink focus:ring-1 focus:ring-paw-pink outline-none">
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block font-medium mb-2">發佈平台</label>
+                                <select class="w-full p-3 rounded-lg border border-paw-pink/30 focus:border-paw-pink focus:ring-1 focus:ring-paw-pink outline-none">
+                                    <option>選擇平台...</option>
+                                    <option>小紅書</option>
+                                    <option>Instagram</option>
+                                    <option>Facebook</option>
+                                    <option>YouTube</option>
+                                    <option>Twitter</option>
+                                    <option>部落格</option>
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label class="block font-medium mb-2">預計發佈日期</label>
+                                <input type="date" class="w-full p-3 rounded-lg border border-paw-pink/30 focus:border-paw-pink focus:ring-1 focus:ring-paw-pink outline-none">
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="block font-medium mb-2">分類標籤</label>
+                            <div class="flex flex-wrap gap-2">
+                                <span class="badge-chip cursor-pointer"><i class="fas fa-tag mr-1"></i> 寵物日常</span>
+                                <span class="badge-chip cursor-pointer"><i class="fas fa-tag mr-1"></i> 飼養教學</span>
+                                <span class="badge-chip cursor-pointer"><i class="fas fa-tag mr-1"></i> 產品開箱</span>
+                                <span class="badge-chip cursor-pointer"><i class="fas fa-tag mr-1"></i> 健康知識</span>
+                                <span class="badge-chip cursor-pointer"><i class="fas fa-tag mr-1"></i> 搞笑影片</span>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="block font-medium mb-2">狀態</label>
+                            <div class="flex flex-wrap gap-3">
+                                <label class="flex items-center">
+                                    <input type="radio" name="status" class="mr-2" checked>
+                                    <span class="px-3 py-1 bg-gray-200 rounded-full">待寫</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="radio" name="status" class="mr-2">
+                                    <span class="px-3 py-1 bg-yellow-200 rounded-full">草稿完成</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="radio" name="status" class="mr-2">
+                                    <span class="px-3 py-1 bg-green-200 rounded-full">已排程</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="radio" name="status" class="mr-2">
+                                    <span class="px-3 py-1 bg-blue-200 rounded-full">已發佈</span>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <button class="mt-4 w-full paw-gradient-bg text-white font-bold py-3 rounded-lg hover:opacity-90 transition flex items-center justify-center">
+                            <i class="fas fa-calendar-plus mr-2"></i> 加入排程
+                        </button>
+                    </form>
+                </section>
+                
+                <!-- 內容月曆區 -->
+                <section id="calendar-view" class="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-white">
+                    <div class="flex items-center justify-between mb-6">
+                        <h2 class="text-xl font-bold flex items-center">
+                            <i class="fas fa-calendar-alt text-paw-blue mr-2"></i>
+                            內容月曆
+                        </h2>
+                        <div class="flex items-center space-x-3">
+                            <button class="p-2 rounded-full hover:bg-paw-peach/50">
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                            <span class="font-bold">2023年10月</span>
+                            <button class="p-2 rounded-full hover:bg-paw-peach/50">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- 月曆標頭 -->
+                    <div class="grid grid-cols-7 gap-1 mb-2">
+                        <div class="text-center py-2 font-bold text-paw-pink">日</div>
+                        <div class="text-center py-2 font-bold">一</div>
+                        <div class="text-center py-2 font-bold">二</div>
+                        <div class="text-center py-2 font-bold">三</div>
+                        <div class="text-center py-2 font-bold">四</div>
+                        <div class="text-center py-2 font-bold">五</div>
+                        <div class="text-center py-2 font-bold text-paw-blue">六</div>
+                    </div>
+                    
+                    <!-- 月曆本體 -->
+                    <div class="grid grid-cols-7 gap-1">
+                        <!-- 空白日 -->
+                        <div class="calendar-day"></div>
+                        <div class="calendar-day"></div>
+                        <div class="calendar-day"></div>
+                        <div class="calendar-day"></div>
+                        <div class="calendar-day"></div>
+                        
+                        <!-- 10月1日開始 -->
+                        <div class="calendar-day bg-paw-peach/30 rounded-lg p-2 text-center active">
+                            <div class="font-bold">1</div>
+                            <div class="text-xs mt-1">
+                                <span class="status-published px-1 rounded">2篇</span>
+                            </div>
+                        </div>
+                        <div class="calendar-day bg-paw-peach/30 rounded-lg p-2 text-center">
+                            <div class="font-bold">2</div>
+                            <div class="text-xs mt-1">
+                                <span class="status-published px-1 rounded">1篇</span>
+                            </div>
+                        </div>
+                        
+                        <!-- 3-7日 -->
+                        <div class="calendar-day bg-paw-peach/30 rounded-lg p-2 text-center">
+                            <div class="font-bold">3</div>
+                        </div>
+                        <div class="calendar-day bg-paw-peach/30 rounded-lg p-2 text-center">
+                            <div class="font-bold">4</div>
+                            <div class="text-xs mt-1">
+                                <span class="status-draft px-1 rounded">1篇</span>
+                            </div>
+                        </div>
+                        <div class="calendar-day bg-paw-peach/30 rounded-lg p-2 text-center">
+                            <div class="font-bold">5</div>
+                        </div>
+                        <div class="calendar-day bg-paw-peach/30 rounded-lg p-2 text-center">
+                            <div class="font-bold">6</div>
+                        </div>
+                        <div class="calendar-day bg-paw-peach/30 rounded-lg p-2 text-center">
+                            <div class="font-bold">7</div>
+                            <div class="text-xs mt-1">
+                                <span class="status-scheduled px-1 rounded">1篇</span>
+                            </div>
+                        </div>
+                        
+                        <!-- 8-14日 -->
+                        <div class="calendar-day bg-paw-peach/30 rounded-lg p-2 text-center">
+                            <div class="font-bold">8</div>
+                        </div>
+                        <div class="calendar-day bg-paw-peach/30 rounded-lg p-2 text-center">
+                            <div class="font-bold">9</div>
+                        </div>
+                        <div class="calendar-day bg-paw-peach/30 rounded-lg p-2 text-center">
+                            <div class="font-bold">10</div>
+                            <div class="text-xs mt-1">
+                                <span class="status-todo px-1 rounded">2篇</span>
+                            </div>
+                        </div>
+                        <div class="calendar-day bg-paw-peach/30 rounded-lg p-2 text-center">
+                            <div class="font-bold">11</div>
+                        </div>
+                        <div class="calendar-day bg-paw-peach/30 rounded-lg p-2 text-center">
+                            <div class="font-bold">12</div>
+                        </div>
+                        <div class="calendar-day bg-paw-peach/30 rounded-lg p-2 text-center">
+                            <div class="font-bold">13</div>
+                        </div>
+                        <div class="calendar-day bg-paw-peach/30 rounded-lg p-2 text-center">
+                            <div class="font-bold">14</div>
+                            <div class="text-xs mt-1">
+                                <span class="status-scheduled px-1 rounded">1篇</span>
+                            </div>
+                        </div>
+                        
+                        <!-- 15-21日 -->
+                        <div class="calendar-day bg-paw-peach/30 rounded-lg p-2 text-center">
+                            <div class="font-bold">15</div>
+                        </div>
+                        <div class="calendar-day bg-paw-peach/30 rounded-lg p-2 text-center">
+                            <div class="font-bold">16</div>
+                            <div class="text-xs mt-1">
+                                <span class="status-draft px-1 rounded">1篇</span>
+                            </div>
+                        </div>
+                        <div class="calendar-day bg-paw-peach/30 rounded-lg p-2 text-center">
+                            <div class="font-bold">17</div>
+                        </div>
+                        <div class="calendar-day bg-paw-peach/30 rounded-lg p-2 text-center">
+                            <div class="font-bold">18</div>
+                            <div class="text-xs mt-1">
+                                <span class="status-todo px-1 rounded">3篇</span>
+                            </div>
+                        </div>
+                        <div class="calendar-day bg-paw-peach/30 rounded-lg p-2 text-center">
+                            <div class="font-bold">19</div>
+                        </div>
+                        <div class="calendar-day bg-paw-peach/30 rounded-lg p-2 text-center">
+                            <div class="font-bold">20</div>
+                        </div>
+                        <div class="calendar-day bg-paw-peach/30 rounded-lg p-2 text-center">
+                            <div class="font-bold">21</div>
+                        </div>
+                        
+                        <!-- 22-28日 -->
+                        <div class="calendar-day bg-paw-peach/30 rounded-lg p-2 text-center">
+                            <div class="font-bold">22</div>
+                        </div>
+                        <div class="calendar-day bg-paw-peach/30 rounded-lg p-2 text-center">
+                            <div class="font-bold">23</div>
+                            <div class="text-xs mt-1">
+                                <span class="status-scheduled px-1 rounded">2篇</span>
+                            </div>
+                        </div>
+                        <div class="calendar-day bg-paw-peach/30 rounded-lg p-2 text-center">
+                            <div class="font-bold">24</div>
+                        </div>
+                        <div class="calendar-day bg-paw-peach/30 rounded-lg p-2 text-center">
+                            <div class="font-bold">25</div>
+                        </div>
+                        <div class="calendar-day bg-paw-peach/30 rounded-lg p-2 text-center">
+                            <div class="font-bold">26</div>
+                        </div>
+                        <div class="calendar-day bg-paw-peach/30 rounded-lg p-2 text-center">
+                            <div class="font-bold">27</div>
+                            <div class="text-xs mt-1">
+                                <span class="status-todo px-1 rounded">1篇</span>
+                            </div>
+                        </div>
+                        <div class="calendar-day bg-paw-peach/30 rounded-lg p-2 text-center">
+                            <div class="font-bold">28</div>
+                        </div>
+                        
+                        <!-- 29-31日 -->
+                        <div class="calendar-day bg-paw-peach/30 rounded-lg p-2 text-center">
+                            <div class="font-bold">29</div>
+                        </div>
+                        <div class="calendar-day bg-paw-peach/30 rounded-lg p-2 text-center">
+                            <div class="font-bold">30</div>
+                        </div>
+                        <div class="calendar-day bg-paw-peach/30 rounded-lg p-2 text-center">
+                            <div class="font-bold">31</div>
+                            <div class="text-xs mt-1">
+                                <span class="status-scheduled px-1 rounded">1篇</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 狀態說明 -->
+                    <div class="mt-6 flex flex-wrap gap-4 justify-center">
+                        <div class="flex items-center">
+                            <div class="w-4 h-4 bg-gray-300 rounded mr-2"></div>
+                            <span class="text-sm">待寫</span>
+                        </div>
+                        <div class="flex items-center">
+                            <div class="w-4 h-4 bg-yellow-300 rounded mr-2"></div>
+                            <span class="text-sm">草稿完成</span>
+                        </div>
+                        <div class="flex items-center">
+                            <div class="w-4 h-4 bg-green-300 rounded mr-2"></div>
+                            <span class="text-sm">已排程</span>
+                        </div>
+                        <div class="flex items-center">
+                            <div class="w-4 h-4 bg-blue-300 rounded mr-2"></div>
+                            <span class="text-sm">已發佈</span>
+                        </div>
+                    </div>
+                </section>
+            </div>
+            
+            <!-- 右側區塊 -->
+            <div class="space-y-8">
+                <!-- 靈感暫存區 -->
+                <section id="idea-pool" class="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-white">
+                    <div class="flex items-center mb-6">
+                        <h2 class="text-xl font-bold flex items-center">
+                            <i class="fas fa-lightbulb text-paw-pink mr-2"></i>
+                            靈感暫存區
+                        </h2>
+                        <button class="ml-auto bg-paw-blue/20 text-paw-dark px-3 py-1 rounded-full text-sm hover:bg-paw-blue/30 transition">
+                            <i class="fas fa-plus mr-1"></i> 新增靈感
+                        </button>
+                    </div>
+                    
+                    <div class="space-y-3">
+                        <div class="idea-card bg-paw-peach/30 p-4 rounded-lg">
+                            <div class="font-medium flex justify-between">
+                                <span>貓咪減壓玩具開箱</span>
+                                <span class="text-paw-dark/60 text-sm">昨天新增</span>
+                            </div>
+                            <div class="mt-2 flex flex-wrap gap-1">
+                                <span class="badge-chip">開箱</span>
+                                <span class="badge-chip">貓咪</span>
+                            </div>
+                        </div>
+                        
+                        <div class="idea-card bg-paw-blue/20 p-4 rounded-lg">
+                            <div class="font-medium flex justify-between">
+                                <span>狗狗散步裝備指南</span>
+                                <span class="text-paw-dark/60 text-sm">3天前</span>
+                            </div>
+                            <div class="mt-2 flex flex-wrap gap-1">
+                                <span class="badge-chip">裝備</span>
+                                <span class="badge-chip">狗狗</span>
+                            </div>
+                        </div>
+                        
+                        <div class="idea-card bg-paw-pink/20 p-4 rounded-lg">
+                            <div class="font-medium flex justify-between">
+                                <span>寵物攝影技巧教學</span>
+                                <span class="text-paw-dark/60 text-sm">5天前</span>
+                            </div>
+                            <div class="mt-2 flex flex-wrap gap-1">
+                                <span class="badge-chip">攝影</span>
+                                <span class="badge-chip">教學</span>
+                            </div>
+                        </div>
+                        
+                        <div class="idea-card bg-paw-cream p-4 rounded-lg border border-paw-pink/30">
+                            <div class="font-medium flex justify-between">
+                                <span>寵物鮮食食譜分享</span>
+                                <span class="text-paw-dark/60 text-sm">1週前</span>
+                            </div>
+                            <div class="mt-2 flex flex-wrap gap-1">
+                                <span class="badge-chip">食譜</span>
+                                <span class="badge-chip">健康</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4 text-center text-sm text-paw-dark/70">
+                        <i class="fas fa-hand-pointer mr-2"></i>拖曳靈感到月曆上即可排程
+                    </div>
+                </section>
+                
+                <!-- 進度成就區 -->
+                <section id="progress-box" class="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-white">
+                    <h2 class="text-xl font-bold flex items-center mb-6">
+                        <i class="fas fa-trophy text-paw-blue mr-2"></i>
+                        進度與成就徽章
+                    </h2>
+                    
+                    <div class="mb-6">
+                        <div class="flex justify-between mb-2">
+                            <span class="font-medium">本月目標: 15篇</span>
+                            <span class="font-medium">目前進度: 8篇</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-4">
+                            <div class="bg-paw-pink h-4 rounded-full" style="width: 53%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-paw-blue/10 p-4 rounded-lg text-center">
+                            <div class="text-3xl mb-2">🎯</div>
+                            <div class="font-bold">連發小能手</div>
+                            <div class="text-sm mt-1">連續發文 3 天</div>
+                            <div class="mt-2">
+                                <span class="bg-paw-pink text-white px-2 py-1 rounded-full text-xs">已解鎖</span>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-paw-pink/10 p-4 rounded-lg text-center">
+                            <div class="text-3xl mb-2">🧠</div>
+                            <div class="font-bold">靈感製造機</div>
+                            <div class="text-sm mt-1">發文數達 10 篇</div>
+                            <div class="mt-2">
+                                <span class="bg-gray-400 text-white px-2 py-1 rounded-full text-xs">2篇後解鎖</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4 text-center">
+                        <button class="text-paw-blue font-medium hover:text-paw-dark transition">
+                            <i class="fas fa-medal mr-2"></i>查看所有成就
+                        </button>
+                    </div>
+                </section>
+                
+                <!-- 汪咕小語區 -->
+                <section id="wongoo-talk" class="bg-paw-pink/10 rounded-2xl p-6 shadow-lg border border-paw-pink/20">
+                    <div class="flex items-start">
+                        <div class="mr-4">
+                            <span class="text-4xl">🐻</span>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-lg mb-2">汪咕小語</h3>
+                            <p class="bg-white/90 p-4 rounded-xl shadow-sm">
+                                記得寫今天的靈感喔！靈感也是會過期的～<br>
+                                今天還沒安排內容呢，要不要來規劃一下？
+                            </p>
+                            <div class="mt-3 flex">
+                                <button class="bg-paw-pink text-white px-4 py-2 rounded-lg text-sm mr-2 hover:bg-paw-dark transition">
+                                    查看待辦
+                                </button>
+                                <button class="bg-white border border-paw-pink text-paw-pink px-4 py-2 rounded-lg text-sm hover:bg-paw-pink/10 transition">
+                                    新增靈感
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+        
+        <!-- 當日內容清單 -->
+        <section class="mt-10 bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-white">
+            <h2 class="text-xl font-bold flex items-center mb-6">
+                <i class="fas fa-tasks text-paw-blue mr-2"></i>
+                今日排程內容 (2023-10-01)
+            </h2>
+            
+            <div class="space-y-4">
+                <div class="content-item bg-white p-4 rounded-lg shadow-sm border-l-4 border-green-400">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h3 class="font-bold">狗狗散步突遇下雨的應對指南</h3>
+                            <div class="flex flex-wrap gap-2 mt-2">
+                                <span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">已發佈</span>
+                                <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">Instagram</span>
+                                <span class="bg-purple-100 text-purple-800 px-2 py-1 rounded-full text-xs">雨天裝備</span>
+                            </div>
+                        </div>
+                        <div class="text-paw-dark/60 text-sm">上午 09:30</div>
+                    </div>
+                </div>
+                
+                <div class="content-item bg-white p-4 rounded-lg shadow-sm border-l-4 border-blue-400">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h3 class="font-bold">貓咪減壓玩具開箱實測</h3>
+                            <div class="flex flex-wrap gap-2 mt-2">
+                                <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">已發佈</span>
+                                <span class="bg-pink-100 text-pink-800 px-2 py-1 rounded-full text-xs">小紅書</span>
+                                <span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs">開箱</span>
+                            </div>
+                        </div>
+                        <div class="text-paw-dark/60 text-sm">下午 14:00</div>
+                    </div>
+                </div>
+                
+                <div class="content-item bg-white p-4 rounded-lg shadow-sm border-l-4 border-yellow-400">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h3 class="font-bold">寵物攝影技巧：如何捕捉精彩瞬間</h3>
+                            <div class="flex flex-wrap gap-2 mt-2">
+                                <span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs">草稿完成</span>
+                                <span class="bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs">YouTube</span>
+                                <span class="bg-indigo-100 text-indigo-800 px-2 py-1 rounded-full text-xs">攝影教學</span>
+                            </div>
+                        </div>
+                        <div class="text-paw-dark/60 text-sm">晚上 20:00</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+    
+    <!-- 頁尾 -->
+    <footer class="bg-paw-dark/5 mt-12 py-8 px-6">
+        <div class="max-w-7xl mx-auto">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="flex items-center mb-4 md:mb-0">
+                    <span class="text-3xl mr-2">🐾</span>
+                    <h2 class="text-xl font-bold">Pawblish</h2>
+                </div>
+                
+                <div class="flex flex-wrap justify-center gap-6 text-sm">
+                    <a href="#" class="hover:text-paw-pink transition">關於我們</a>
+                    <a href="#" class="hover:text-paw-pink transition">使用條款</a>
+                    <a href="#" class="hover:text-paw-pink transition">隱私政策</a>
+                    <a href="#" class="hover:text-paw-pink transition">聯絡我們</a>
+                </div>
+            </div>
+            
+            <div class="text-center mt-6 text-sm text-paw-dark/70">
+                © 2023 Pawblish 寵物創作平台 • 用愛創作，用心分享
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // 月曆點擊功能
+        document.querySelectorAll('.calendar-day').forEach(day => {
+            day.addEventListener('click', function() {
+                document.querySelectorAll('.calendar-day').forEach(d => {
+                    d.classList.remove('active');
+                });
+                this.classList.add('active');
+                
+                // 這裡可以添加顯示當日內容的功能
+            });
+        });
+        
+        // 靈感卡片拖曳功能
+        document.querySelectorAll('.idea-card').forEach(card => {
+            card.setAttribute('draggable', 'true');
+            
+            card.addEventListener('dragstart', function(e) {
+                e.dataTransfer.setData('text/plain', this.innerText);
+            });
+        });
+        
+        // 汪咕小語隨機提示
+        const wongooMessages = [
+            "記得寫今天的靈感喔！靈感也是會過期的～",
+            "今天還沒安排內容呢，要不要來規劃一下？",
+            "創作就像散步，每天走一點點，終點就不遠了！",
+            "你有一個靈感在暫存區待了三天了，來處理一下吧！",
+            "連續創作三天了，太棒了！繼續保持！"
+        ];
+        
+        // 隨機選擇一條訊息
+        function setRandomWongooMessage() {
+            const messageElement = document.querySelector('#wongoo-talk p');
+            if (messageElement) {
+                const randomIndex = Math.floor(Math.random() * wongooMessages.length);
+                messageElement.textContent = wongooMessages[randomIndex];
+            }
+        }
+        
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            setRandomWongooMessage();
+            
+            // 每30秒更換一次訊息
+            setInterval(setRandomWongooMessage, 30000);
+        });
+    </script>
+</body>
+</html>

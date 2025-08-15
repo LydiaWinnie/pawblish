@@ -1,0 +1,986 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pawblish 小夥伴總動員</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --pink: #f582ae;
+            --cream: #fef6e4;
+            --mint: #8bd3dd;
+            --text: #172c66;
+            --shadow: rgba(23, 44, 102, 0.1);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: var(--cream);
+            color: var(--text);
+            overflow-x: hidden;
+            scroll-padding-top: var(--navbar-height, 80px);
+        }
+        #navbar-container { height: var(--navbar-height, 70px); display: block; }
+        
+        /* 頁面容器 */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        /* 導航列統一由 navbar.html 提供，此頁不覆蓋 nav 樣式 */
+        
+        .cta-button {
+            background: linear-gradient(135deg, var(--pink), #e86a9c);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(245, 130, 174, 0.3);
+        }
+        
+        .cta-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(245, 130, 174, 0.4);
+        }
+        
+        /* Hero區 */
+        .hero {
+            height: 80vh;
+            background: linear-gradient(120deg, #fce0ec, var(--mint));
+            border-radius: 0 0 50px 50px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 0 20px;
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 80px;
+        }
+        
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M0,0 L100,0 L100,100 Q50,80 0,100 Z" fill="rgba(255,255,255,0.1)"/></svg>');
+            background-size: cover;
+            background-position: bottom;
+        }
+        
+        .hero h1 {
+            font-size: 3.5rem;
+            margin-bottom: 20px;
+            color: var(--text);
+            z-index: 2;
+            max-width: 900px;
+        }
+        
+        .hero p {
+            font-size: 1.5rem;
+            margin-bottom: 40px;
+            max-width: 700px;
+            z-index: 2;
+        }
+        
+        /* 角色卡片區 */
+        .section-title {
+            text-align: center;
+            font-size: 2.5rem;
+            margin: 60px 0 40px;
+            position: relative;
+            display: inline-block;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 4px;
+            background: var(--pink);
+            border-radius: 2px;
+        }
+        
+        .characters {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 80px;
+        }
+        
+        .character-card {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            width: 320px;
+            box-shadow: 0 10px 30px var(--shadow);
+            transition: all 0.3s ease;
+            position: relative;
+            cursor: pointer;
+        }
+        
+        .character-card:hover {
+            transform: translateY(-15px);
+            box-shadow: 0 15px 40px rgba(23, 44, 102, 0.2);
+        }
+        
+        .character-img {
+            height: 200px;
+            background: linear-gradient(45deg, var(--mint), var(--pink));
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .character-img::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0) 70%);
+            transform: rotate(30deg);
+        }
+        
+        .char-emoji { font-size: 100px; filter: drop-shadow(0 8px 16px rgba(0,0,0,0.15)); transition: transform 0.3s ease; }
+        
+        .character-card:hover .char-emoji { transform: scale(1.1); }
+        
+        .character-info {
+            padding: 25px;
+        }
+        
+        .character-name {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .character-name h3 {
+            font-size: 1.8rem;
+        }
+        
+        .character-name span {
+            font-size: 1.1rem;
+            color: var(--pink);
+            font-weight: 500;
+        }
+        
+        .character-slogan {
+            font-style: italic;
+            color: #555;
+            margin-bottom: 20px;
+            min-height: 60px;
+        }
+        
+        .character-features {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 25px;
+        }
+        
+        .feature {
+            background: var(--cream);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .feature i {
+            color: var(--pink);
+        }
+        
+        .character-button {
+            display: block;
+            width: 100%;
+            text-align: center;
+            background: var(--mint);
+            color: white;
+            padding: 12px;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .character-button:hover {
+            background: #7ac4ce;
+            transform: translateY(-3px);
+        }
+        
+        /* 關係圖區 */
+        .relationship {
+            background: linear-gradient(45deg, #f8d3e4, #b0e5ed);
+            border-radius: 30px;
+            padding: 50px 30px;
+            margin: 80px 0;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .relationship::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none"><circle cx="50" cy="50" r="40" stroke="white" stroke-width="2" fill="none" stroke-dasharray="5,5"/></svg>');
+            opacity: 0.1;
+        }
+        
+        .relationship-content {
+            max-width: 1000px;
+            margin: 0 auto;
+            text-align: center;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .relationship h2 {
+            font-size: 2.2rem;
+            margin-bottom: 30px;
+        }
+        
+        .relationship-diagram {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 30px;
+            margin-top: 40px;
+        }
+        
+        .user-circle {
+            width: 120px;
+            height: 120px;
+            background: var(--pink);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.2rem;
+            position: relative;
+            z-index: 3;
+            box-shadow: 0 8px 20px rgba(245, 130, 174, 0.4);
+        }
+        
+        .character-circle {
+            width: 100px;
+            height: 100px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            z-index: 2;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .character-circle:hover {
+            transform: scale(1.1);
+        }
+        
+        .character-circle i {
+            font-size: 40px;
+            color: var(--pink);
+        }
+        
+        .connection {
+            position: absolute;
+            height: 4px;
+            background: var(--pink);
+            z-index: 1;
+            transform-origin: left;
+        }
+        
+        .connection-label {
+            position: absolute;
+            background: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+        
+        /* 快速召喚區 */
+        .quick-access {
+            margin: 80px 0;
+            text-align: center;
+        }
+        
+        .quick-access-grid {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-top: 40px;
+        }
+        
+        .quick-character {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            position: relative;
+        }
+        
+        .quick-character:hover {
+            transform: scale(1.1);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        }
+        
+        .quick-character i {
+            font-size: 36px;
+            color: var(--pink);
+        }
+        
+        .character-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.8);
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.4s ease;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+        }
+        
+        .character-popup.active {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+            pointer-events: all;
+        }
+        
+        .popup-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 24px;
+            cursor: pointer;
+            color: #999;
+            transition: all 0.3s ease;
+        }
+        
+        .popup-close:hover {
+            color: var(--pink);
+        }
+        
+        .popup-character {
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(45deg, var(--mint), var(--pink));
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .popup-character i {
+            font-size: 50px;
+            color: white;
+        }
+        
+        .popup-text {
+            font-size: 1.2rem;
+            margin-bottom: 25px;
+            line-height: 1.6;
+        }
+        
+        /* 小遊戲區 */
+        .games {
+            background: linear-gradient(45deg, #fef6e4, #e3f2f5);
+            border-radius: 30px;
+            padding: 60px 30px;
+            margin: 80px 0;
+            text-align: center;
+        }
+        
+        .games h2 {
+            font-size: 2.2rem;
+            margin-bottom: 20px;
+        }
+        
+        .games p {
+            max-width: 700px;
+            margin: 0 auto 40px;
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+        
+        .game-cards {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 30px;
+            margin-top: 30px;
+        }
+        
+        .game-card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            width: 300px;
+            box-shadow: 0 10px 30px var(--shadow);
+            transition: all 0.3s ease;
+        }
+        
+        .game-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 40px rgba(23, 44, 102, 0.2);
+        }
+        
+        .game-icon {
+            width: 80px;
+            height: 80px;
+            background: var(--mint);
+            border-radius: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0 auto 20px;
+        }
+        
+        .game-icon i {
+            font-size: 40px;
+            color: white;
+        }
+        
+        .game-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            color: var(--pink);
+        }
+        
+        .progress-bar {
+            height: 10px;
+            background: #eee;
+            border-radius: 5px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+        
+        .progress {
+            height: 100%;
+            background: var(--pink);
+            border-radius: 5px;
+            width: 60%; /* 示例進度 */
+        }
+        
+        .progress-text {
+            font-size: 0.9rem;
+            color: #777;
+        }
+        
+        /* 頁腳 */
+        footer {
+            background: var(--text);
+            color: white;
+            padding: 50px 0 30px;
+            text-align: center;
+            border-radius: 50px 50px 0 0;
+        }
+        
+        .footer-content {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        
+        .footer-logo {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+        
+        .footer-logo span {
+            color: var(--pink);
+        }
+        
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+        
+        .footer-links a {
+            color: #ddd;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        
+        .footer-links a:hover {
+            color: var(--pink);
+        }
+        
+        .social-icons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 30px 0;
+        }
+        
+        .social-icons a {
+            width: 45px;
+            height: 45px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+        }
+        
+        .social-icons a:hover {
+            background: var(--pink);
+            transform: translateY(-5px);
+        }
+        
+        .copyright {
+            margin-top: 30px;
+            color: #aaa;
+            font-size: 0.9rem;
+        }
+        
+        /* 響應式設計 */
+        @media (max-width: 992px) {
+            .hero h1 {
+                font-size: 2.8rem;
+            }
+            
+            .hero p {
+                font-size: 1.2rem;
+            }
+            
+            .character-card {
+                width: 280px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+            
+            .hero {
+                height: 70vh;
+            }
+            
+            .hero h1 {
+                font-size: 2.2rem;
+            }
+            
+            .section-title {
+                font-size: 2rem;
+            }
+            
+            .character-card {
+                width: 100%;
+                max-width: 400px;
+            }
+            
+            .relationship-diagram {
+                gap: 20px;
+            }
+            
+            .user-circle {
+                width: 100px;
+                height: 100px;
+            }
+            
+            .character-circle {
+                width: 80px;
+                height: 80px;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .hero {
+                height: 60vh;
+                border-radius: 0 0 30px 30px;
+            }
+            
+            .hero h1 {
+                font-size: 1.8rem;
+            }
+            
+            .hero p {
+                font-size: 1rem;
+            }
+            
+            .section-title {
+                font-size: 1.8rem;
+            }
+            
+            .character-name h3 {
+                font-size: 1.5rem;
+            }
+        }
+        
+        /* 動畫效果 */
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
+            40% {transform: translateY(-20px);}
+            60% {transform: translateY(-10px);}
+        }
+        
+        .bounce {
+            animation: bounce 1.5s infinite;
+        }
+    </style>
+</head>
+<body>
+  <div id="navbar-container"></div>
+  <script>
+    fetch('navbar.html')
+      .then(response => response.text())
+      .then(data => document.getElementById('navbar-container').innerHTML = data);
+  </script>
+        <!-- Hero區 -->
+        <section class="hero">
+            <h1>小夥伴們準備好了！你準備好探索了嗎？</h1>
+            <p>這些可愛的創作夥伴將幫助你輕鬆完成從靈感發想到內容發佈的所有過程</p>
+            <button class="cta-button bounce">一鍵召喚夥伴</button>
+        </section>
+        
+        <!-- 角色展示區 -->
+        <h2 class="section-title">認識我們的小夥伴</h2>
+        <div class="characters">
+            <!-- 角色1 -->
+            <div class="character-card">
+                <div class="character-img"><div class="char-emoji">🐶</div></div>
+                <div class="character-info">
+                    <div class="character-name">
+                        <h3>咚咚</h3>
+                        <span>靈感小犬</span>
+                    </div>
+                    <p class="character-slogan">"我會把靈感變成腳本喔！"</p>
+                    <div class="character-features">
+                        <div class="feature"><i class="fas fa-pen"></i> 腳本工坊</div>
+                        <div class="feature"><i class="fas fa-video"></i> 短影音腳本</div>
+                    </div>
+                    <a href="script.html" class="character-button">帶我去看咚咚的魔法 ✨</a>
+                </div>
+            </div>
+            
+            <!-- 角色2 -->
+            <div class="character-card">
+                <div class="character-img"><div class="char-emoji">🐧</div></div>
+                <div class="character-info">
+                    <div class="character-name">
+                        <h3>探探</h3>
+                        <span>情報貓頭鷹</span>
+                    </div>
+                    <p class="character-slogan">"熱門趨勢我最懂！"</p>
+                    <div class="character-features">
+                        <div class="feature"><i class="fas fa-chart-line"></i> 熱門趨勢</div>
+                        <div class="feature"><i class="fas fa-hashtag"></i> 熱詞分析</div>
+                    </div>
+                    <a href="trend.html" class="character-button">看看探探的發現 🔍</a>
+                </div>
+            </div>
+            
+            <!-- 角色3（將彩彩改為汪咕） -->
+            <div class="character-card">
+                <div class="character-img"><div class="char-emoji">🐻</div></div>
+                <div class="character-info">
+                    <div class="character-name">
+                        <h3>汪咕</h3>
+                        <span>排程小熊</span>
+                    </div>
+                    <p class="character-slogan">"幫你把內容排程好好的！"</p>
+                    <div class="character-features">
+                        <div class="feature"><i class="fas fa-calendar-alt"></i> 內容日曆</div>
+                        <div class="feature"><i class="fas fa-book"></i> 使用教學</div>
+                    </div>
+                    <a href="planner.html" class="character-button">安排我的內容 🗓️</a>
+                </div>
+            </div>
+            
+            <!-- 角色4 -->
+            <div class="character-card">
+                <div class="character-img"><div class="char-emoji">🐘</div></div>
+                <div class="character-info">
+                    <div class="character-name">
+                        <h3>咕比</h3>
+                        <span>解惑小象</span>
+                    </div>
+                    <p class="character-slogan">"有問題就來問我～"</p>
+                    <div class="character-features">
+                        <div class="feature"><i class="fas fa-question-circle"></i> 問答支援</div>
+                        <div class="feature"><i class="fas fa-headset"></i> 智能客服</div>
+                    </div>
+                    <a href="assistant.html" class="character-button">向咕比發問 💬</a>
+                </div>
+            </div>
+            
+            <!-- 角色5 -->
+            <div class="character-card">
+                <div class="character-img"><div class="char-emoji">🦁</div></div>
+                <div class="character-info">
+                    <div class="character-name">
+                        <h3>鈴鈴</h3>
+                        <span>分析小獅</span>
+                    </div>
+                    <p class="character-slogan">"把效果講清楚、讓成長更確定！"</p>
+                    <div class="character-features">
+                        <div class="feature"><i class="fas fa-chart-pie"></i> 報表分析</div>
+                        <div class="feature"><i class="fas fa-bolt"></i> 效能優化</div>
+                    </div>
+                    <a href="pawmetrics.html" class="character-button">查看我的報表 📊</a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 關係圖區 -->
+        <section class="relationship">
+            <div class="relationship-content">
+                <h2>小夥伴們的友誼網絡</h2>
+                <p>每位小夥伴都有獨特的專長，他們互相合作，共同幫助你完成創作旅程</p>
+                
+            <div class="relationship-diagram">
+                <div class="user-circle">你</div>
+                <div class="character-circle" style="top: -80px; left: 150px;">🐶</div>
+                <div class="character-circle" style="top: 80px; left: 150px;">🐧</div>
+                <div class="character-circle" style="top: -80px; left: -150px;">🐻</div>
+                <div class="character-circle" style="top: 80px; left: -150px;">🐘</div>
+                <div class="character-circle" style="top: 180px; left: 0;">🦁</div>
+                <div class="connection-label" style="top: -100px; left: 50px;">咚咚｜腳本 & 靈感</div>
+                <div class="connection-label" style="top: 100px; left: 50px;">探探｜趨勢 & 熱詞</div>
+                <div class="connection-label" style="top: -100px; right: 50px;">汪咕｜日曆 & 教學</div>
+                <div class="connection-label" style="top: 100px; right: 50px;">咕比｜解惑 & 客服</div>
+                <div class="connection-label" style="bottom: 80px; left: 0;">鈴鈴｜報表 & 優化</div>
+            </div>
+            </div>
+        </section>
+        
+        <!-- 快速召喚區 -->
+        <section class="quick-access">
+            <h2 class="section-title">快速召喚小夥伴</h2>
+            <p>點擊角色頭像，隨時獲得幫助</p>
+            
+            <div class="quick-access-grid">
+                <div class="quick-character" data-character="咚咚"><span class="char-emoji">🐶</span></div>
+                <div class="quick-character" data-character="探探"><span class="char-emoji">🐧</span></div>
+            <div class="quick-character" data-character="汪咕"><span class="char-emoji">🐻</span></div>
+            <div class="quick-character" data-character="咕比"><span class="char-emoji">🐘</span></div>
+            <div class="quick-character" data-character="鈴鈴"><span class="char-emoji">🦁</span></div>
+            </div>
+            
+            <!-- 彈出視窗 -->
+            <div class="character-popup" id="characterPopup">
+                <div class="popup-close">&times;</div>
+                <div class="popup-character">
+                    <i class="fas fa-lightbulb"></i>
+                </div>
+                <p class="popup-text">嗨！我是咚咚，我可以幫你產生創作靈感，將想法轉化為精彩的腳本！</p>
+                <button class="cta-button">馬上開始創作</button>
+            </div>
+        </section>
+        
+        <!-- 小遊戲推薦區 -->
+        <section class="games">
+            <h2>與小夥伴互動解鎖成就</h2>
+            <p>完成任務可以解鎖特別造型和表情符號，讓你的創作之旅更有趣！</p>
+            
+            <div class="game-cards">
+                <div class="game-card">
+                    <div class="game-icon">
+                        <i class="fas fa-tasks"></i>
+                    </div>
+                    <h3>靈感任務</h3>
+                    <p>跟咚咚完成一篇腳本就能解鎖表情！</p>
+                    <div class="progress-bar">
+                        <div class="progress" style="width: 80%;"></div>
+                    </div>
+                    <div class="progress-text">已完成 4/5 任務</div>
+                </div>
+                
+                <div class="game-card">
+                    <div class="game-icon">
+                        <i class="fas fa-trophy"></i>
+                    </div>
+                    <h3>趨勢達人</h3>
+                    <p>與探探探索 10 個熱門主題解鎖造型</p>
+                    <div class="progress-bar">
+                        <div class="progress" style="width: 30%;"></div>
+                    </div>
+                    <div class="progress-text">已完成 3/10 主題</div>
+                </div>
+                
+                <div class="game-card">
+                    <div class="game-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <h3>社群之星</h3>
+                    <p>透過鈴鈴分享 5 篇作品獲得專屬勳章</p>
+                    <div class="progress-bar">
+                        <div class="progress" style="width: 60%;"></div>
+                    </div>
+                    <div class="progress-text">已完成 3/5 分享</div>
+                </div>
+            </div>
+        </section>
+    </div>
+    
+    <!-- 頁腳 -->
+    <footer>
+        <div class="footer-content">
+            <div class="footer-logo">Paw<span>blish</span></div>
+            <p>讓創作變得簡單又有趣的可愛夥伴平台</p>
+            
+            <div class="footer-links">
+                <a href="#">關於我們</a>
+                <a href="#">使用教學</a>
+                <a href="#">功能介紹</a>
+                <a href="#">常見問題</a>
+                <a href="#">聯絡我們</a>
+            </div>
+            
+            <div class="social-icons">
+                <a href="#"><i class="fab fa-facebook-f"></i></a>
+                <a href="#"><i class="fab fa-instagram"></i></a>
+                <a href="#"><i class="fab fa-twitter"></i></a>
+                <a href="#"><i class="fab fa-youtube"></i></a>
+            </div>
+            
+            <div class="copyright">
+                &copy; 2023 Pawblish 創意內容平台。保留所有權利。
+            </div>
+        </div>
+    </footer>
+    
+    <script>
+        // 角色彈出視窗功能
+        const quickCharacters = document.querySelectorAll('.quick-character');
+        const characterPopup = document.getElementById('characterPopup');
+        const popupClose = document.querySelector('.popup-close');
+        const popupCharacter = document.querySelector('.popup-character i');
+        const popupText = document.querySelector('.popup-text');
+        
+        // 角色資料
+        const charactersData = {
+            '咚咚': {
+                icon: 'fa-lightbulb',
+                text: '嗨！我是咚咚，我可以幫你產生創作靈感，將想法轉化為精彩的腳本！'
+            },
+            '探探': {
+                icon: 'fa-search',
+                text: '你好！我是探探，我能幫你找到最新熱門趨勢和話題，讓你的創作更受歡迎！'
+            },
+            '彩彩': {
+                icon: 'fa-paint-brush',
+                text: '我是彩彩！讓我為你的創作添加美麗的視覺設計，讓作品更吸睛！'
+            },
+            '咕比': {
+                icon: 'fa-chart-pie',
+                text: '咕比在此！我能分析你的創作表現，幫助你了解如何提升影響力！'
+            },
+            '鈴鈴': {
+                icon: 'fa-share-alt',
+                text: '鈴鈴來啦！讓我幫你把作品分享到各大社群平台，獲得更多關注吧！'
+            }
+        };
+        
+        // 添加點擊事件
+        quickCharacters.forEach(character => {
+            character.addEventListener('click', () => {
+                const characterName = character.getAttribute('data-character');
+                const characterData = charactersData[characterName];
+                
+                popupCharacter.className = `fas ${characterData.icon}`;
+                popupText.textContent = characterData.text;
+                
+                characterPopup.classList.add('active');
+            });
+        });
+        
+        // 關閉彈出視窗
+        popupClose.addEventListener('click', () => {
+            characterPopup.classList.remove('active');
+        });
+        
+        // 點擊視窗外部關閉
+        window.addEventListener('click', (e) => {
+            if (e.target === characterPopup) {
+                characterPopup.classList.remove('active');
+            }
+        });
+        
+        // 角色卡片懸停效果增強
+        const characterCards = document.querySelectorAll('.character-card');
+        characterCards.forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                card.style.transform = 'translateY(-15px)';
+            });
+            
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = 'translateY(0)';
+            });
+        });
+        
+        // 召喚夥伴按鈕效果
+        const summonButton = document.querySelector('.hero .cta-button');
+        summonButton.addEventListener('click', () => {
+            summonButton.classList.remove('bounce');
+            setTimeout(() => {
+                document.querySelector('.characters').scrollIntoView({ 
+                    behavior: 'smooth' 
+                });
+                summonButton.classList.add('bounce');
+            }, 300);
+        });
+    </script>
+</body>
+</html>

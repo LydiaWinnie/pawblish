@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>🐘 PawMetrics 數據分析後台 | Pawblish</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="pawblish-navbar.css">
+  <link href="aos.css" rel="stylesheet">
+  <script src="aos.js"></script>
+  <script src="chart.js"></script>
+  <style>
+    body { scroll-padding-top: var(--navbar-height, 80px); }
+    /* 對齊其他頁的容器命名與預留高度 */
+    #navbar-container { height: var(--navbar-height, 70px); display: block; }
+  </style>
+</head>
+<body class="bg-[#fef6e4] font-sans text-[#001858]">
+
+<!-- Navbar -->
+<div id="navbar-container"></div>
+
+<!-- Hero -->
+<section class="text-center pt-24 pb-12 px-6" data-aos="fade-up">
+  <h1 class="text-4xl md:text-5xl font-bold mb-4">🐘 你的內容成長，艾莉一直都在看見。</h1>
+  <p class="text-lg text-[#172c66] max-w-2xl mx-auto">
+    用 PawMetrics，輕鬆追蹤每一篇貼文、每一個腳本的表現，<br>
+    在成長的每個瞬間，看見屬於自己的亮眼曲線！
+  </p>
+</section>
+
+<!-- 圖表篩選區 -->
+<section class="max-w-4xl mx-auto px-6 pb-12">
+  <div class="flex justify-between items-center mb-4">
+    <div>
+      <label for="platformSelect" class="mr-2 font-bold">選擇平台：</label>
+      <select id="platformSelect" class="p-2 rounded border border-gray-300">
+        <option value="all">全部平台</option>
+        <option value="instagram">Instagram</option>
+        <option value="tiktok">TikTok</option>
+      </select>
+    </div>
+    <div>
+      <button onclick="loadData(7)" class="px-4 py-2 bg-[#8bd3dd] rounded mr-2">近 7 天</button>
+      <button onclick="loadData(30)" class="px-4 py-2 bg-[#f582ae] rounded">近 30 天</button>
+    </div>
+  </div>
+  <canvas id="growthChart" height="120"></canvas>
+  <div class="text-right mt-4">
+    <button onclick="downloadCSV()" class="bg-[#f3d2c1] px-4 py-2 rounded shadow">⬇️ 匯出報表</button>
+  </div>
+</section>
+
+<!-- 溫暖收尾 -->
+<section class="text-center py-16 bg-[#fef6e4] px-6" data-aos="fade-up">
+  <img src="ellie_metrics.png" alt="艾莉小象流量線圖" class="mx-auto rounded-xl w-2/3 mb-8">
+  <h2 class="text-3xl font-bold mb-4 text-[#001858]">🐾 在 Pawblish，每一份用心，都值得被看見。</h2>
+  <p class="text-[#172c66] max-w-2xl mx-auto">
+    每個小小的點閱，每段用心創作，<br>
+    都被艾莉默默紀錄在數據的海洋裡，<br>
+    為你留下一盞溫暖的小燈，<br>
+    陪你走向更耀眼的舞台。✨🐘
+  </p>
+</section>
+
+<!-- Footer -->
+<footer class="text-center text-sm py-6 text-[#001858]">
+  <p>© 2025 Pawblish. 用數據，看見成長之光 📊✨</p>
+</footer>
+
+<!-- Scripts -->
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    fetch("navbar.html")
+      .then(res => res.text())
+      .then(data => {
+        document.getElementById("navbar-container").innerHTML = data;
+      });
+    AOS.init({ duration: 1000, once: true });
+    renderChart([100, 120, 130, 150, 170, 160, 180]);
+  });
+
+  let chart;
+  function renderChart(data) {
+    const ctx = document.getElementById('growthChart').getContext('2d');
+    if(chart) chart.destroy();
+    chart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: ['週一', '週二', '週三', '週四', '週五', '週六', '週日'],
+        datasets: [{
+          label: '點擊量',
+          data: data,
+          borderColor: '#f582ae',
+          backgroundColor: 'rgba(245,130,174,0.1)',
+          fill: true,
+          tension: 0.4
+        }]
+      },
+      options: { responsive: true }
+    });
+  }
+
+  function loadData(days) {
+    const dummy = days === 7 ? [100, 120, 130, 150, 170, 160, 180] : [80, 90, 100, 110, 120, 125, 130];
+    renderChart(dummy);
+  }
+
+  function downloadCSV() {
+    const csv = '日期,曝光,點擊,互動\n' +
+      '2025-05-01,1000,120,20\n' +
+      '2025-05-02,1100,130,25';
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    link.setAttribute("href", URL.createObjectURL(blob));
+    link.setAttribute("download", "pawmetrics_report.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+</script>
+</body>
+</html>

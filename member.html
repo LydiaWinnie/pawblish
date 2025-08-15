@@ -1,0 +1,1900 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pawblish - 會員中心</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <style>
+        :root {
+            --paw-pink: #F582AE;
+            --paw-blue: #8BD3DD;
+            --paw-cream: #FEF6E4;
+            --paw-peach: #F3D2C1;
+            --paw-dark: #001858;
+            --paw-light: #FFFFFF;
+            --paw-shadow: rgba(0, 24, 88, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: var(--paw-cream);
+            color: var(--paw-dark);
+            line-height: 1.6;
+            scroll-padding-top: var(--navbar-height, 80px);
+        }
+        #navbar-container { height: var(--navbar-height, 70px); display: block; }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* 動畫效果 */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes floating {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes bounceIn {
+            from, 20%, 40%, 60%, 80%, to {
+                animation-timing-function: cubic-bezier(0.215, 0.610, 0.355, 1.000);
+            }
+            0% {
+                opacity: 0;
+                transform: scale3d(.3, .3, .3);
+            }
+            20% {
+                transform: scale3d(1.1, 1.1, 1.1);
+            }
+            40% {
+                transform: scale3d(.9, .9, .9);
+            }
+            60% {
+                opacity: 1;
+                transform: scale3d(1.03, 1.03, 1.03);
+            }
+            80% {
+                transform: scale3d(.97, .97, .97);
+            }
+            to {
+                opacity: 1;
+                transform: scale3d(1, 1, 1);
+            }
+        }
+
+        /* Header 樣式 */
+        header {
+            background: linear-gradient(135deg, var(--paw-pink), var(--paw-blue));
+            color: white;
+            padding: 15px 0;
+            box-shadow: 0 4px 12px var(--paw-shadow);
+        }
+        
+
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .logo i {
+            margin-right: 10px;
+            animation: floating 3s ease-in-out infinite;
+        }
+
+        nav ul {
+            display: flex;
+            list-style: none;
+        }
+
+        nav ul li {
+            margin-left: 20px;
+        }
+
+        nav ul li a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        nav ul li a:hover {
+            text-decoration: underline;
+        }
+
+        /* 個人檔案區 */
+        .profile-section {
+            background-color: white;
+            border-radius: 20px;
+            padding: 30px;
+            margin: 30px 0;
+            box-shadow: 0 5px 15px var(--paw-shadow);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .profile-bg {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 200px;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(245, 130, 174, 0.1), rgba(139, 211, 221, 0.1));
+            clip-path: polygon(25% 0%, 100% 0%, 100% 100%, 0% 100%);
+        }
+
+        .profile-content {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .profile-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background-color: var(--paw-blue);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-right: 30px;
+            overflow: hidden;
+            border: 5px solid white;
+            box-shadow: 0 5px 15px var(--paw-shadow);
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .profile-avatar:hover {
+            transform: scale(1.05);
+        }
+
+        .profile-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .profile-info {
+            flex: 1;
+            min-width: 300px;
+        }
+
+        .profile-name {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+        }
+
+        .profile-title {
+            display: inline-block;
+            background-color: var(--paw-pink);
+            color: white;
+            padding: 3px 10px;
+            border-radius: 15px;
+            font-size: 14px;
+            margin-left: 10px;
+        }
+
+        .profile-bio {
+            margin-bottom: 15px;
+            color: #555;
+        }
+
+        .profile-links {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .profile-link {
+            color: var(--paw-dark);
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+
+        .profile-link:hover {
+            color: var(--paw-pink);
+        }
+
+        .profile-stats {
+            display: flex;
+            gap: 20px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--paw-pink);
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: #777;
+        }
+
+        .profile-actions {
+            margin-left: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .profile-button {
+            background: linear-gradient(to right, var(--paw-pink), var(--paw-blue));
+            color: white;
+            border: none;
+            border-radius: 30px;
+            padding: 10px 20px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 120px;
+        }
+
+        .profile-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .profile-button i {
+            margin-right: 5px;
+        }
+
+        .voice-button {
+            background-color: var(--paw-peach);
+            color: var(--paw-dark);
+        }
+
+        /* 角色小隊區 */
+        .team-section {
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: var(--paw-dark);
+            display: flex;
+            align-items: center;
+        }
+
+        .section-title i {
+            margin-right: 10px;
+            color: var(--paw-pink);
+        }
+
+        .team-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .character-card {
+            background-color: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 5px 15px var(--paw-shadow);
+            transition: all 0.3s;
+            text-align: center;
+            cursor: pointer;
+        }
+
+        .character-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px var(--paw-shadow);
+        }
+
+        .character-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background-color: var(--paw-blue);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0 auto 15px;
+            font-size: 40px;
+            color: white;
+            transition: all 0.3s;
+        }
+
+        .character-card:hover .character-avatar {
+            transform: scale(1.1);
+        }
+
+        .character-name {
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .character-role {
+            font-size: 14px;
+            color: #777;
+            margin-bottom: 10px;
+        }
+
+        .level-bar {
+            height: 6px;
+            background-color: #eee;
+            border-radius: 3px;
+            margin-bottom: 5px;
+            overflow: hidden;
+        }
+
+        .level-fill {
+            height: 100%;
+            background: linear-gradient(to right, var(--paw-blue), var(--paw-pink));
+            border-radius: 3px;
+        }
+
+        .level-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #777;
+        }
+
+        /* 排程管理區 */
+        .schedule-section {
+            margin-bottom: 30px;
+        }
+
+        .schedule-tabs {
+            display: flex;
+            border-bottom: 2px solid var(--paw-peach);
+            margin-bottom: 20px;
+        }
+
+        .schedule-tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+            border-bottom: 3px solid transparent;
+        }
+
+        .schedule-tab.active {
+            border-bottom: 3px solid var(--paw-pink);
+            color: var(--paw-pink);
+        }
+
+        .schedule-tab:hover:not(.active) {
+            background-color: var(--paw-peach);
+        }
+
+        .schedule-content {
+            display: none;
+        }
+
+        .schedule-content.active {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .calendar-nav {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .calendar-nav-button {
+            background-color: var(--paw-peach);
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .calendar-nav-button:hover {
+            background-color: var(--paw-pink);
+            color: white;
+        }
+
+        .calendar-title {
+            font-weight: 700;
+            min-width: 150px;
+            text-align: center;
+        }
+
+        .calendar-view {
+            display: flex;
+            gap: 10px;
+        }
+
+        .view-button {
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            padding: 5px 15px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .view-button.active {
+            background-color: var(--paw-pink);
+            color: white;
+            border-color: var(--paw-pink);
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 10px;
+        }
+
+        .calendar-day-header {
+            text-align: center;
+            font-weight: 700;
+            padding: 10px;
+            color: var(--paw-pink);
+        }
+
+        .calendar-day {
+            background-color: white;
+            border-radius: 10px;
+            padding: 10px;
+            min-height: 100px;
+            box-shadow: 0 2px 5px var(--paw-shadow);
+            transition: all 0.3s;
+        }
+
+        .calendar-day:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 10px var(--paw-shadow);
+        }
+
+        .day-number {
+            font-weight: 700;
+            margin-bottom: 5px;
+            text-align: center;
+            color: #777;
+        }
+
+        .calendar-event {
+            background-color: var(--paw-blue);
+            color: white;
+            font-size: 12px;
+            padding: 3px 5px;
+            border-radius: 5px;
+            margin-bottom: 3px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .calendar-event:hover {
+            background-color: var(--paw-pink);
+        }
+
+        .schedule-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 15px;
+        }
+
+        .schedule-card {
+            background-color: white;
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 3px 10px var(--paw-shadow);
+            transition: all 0.3s;
+        }
+
+        .schedule-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px var(--paw-shadow);
+        }
+
+        .schedule-title {
+            font-weight: 700;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+        }
+
+        .schedule-status {
+            display: inline-block;
+            font-size: 12px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            margin-left: 10px;
+        }
+
+        .status-published {
+            background-color: #D8FFC4;
+            color: #3AC41E;
+        }
+
+        .status-draft {
+            background-color: #FFE8C4;
+            color: #C47E1E;
+        }
+
+        .schedule-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #777;
+            margin-bottom: 10px;
+        }
+
+        .schedule-character {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 10px;
+            background-color: #eee;
+            font-size: 12px;
+        }
+
+        .schedule-actions {
+            display: flex;
+            gap: 5px;
+            margin-top: 10px;
+        }
+
+        .schedule-button {
+            background-color: #eee;
+            border: none;
+            border-radius: 5px;
+            padding: 3px 8px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .schedule-button:hover {
+            background-color: var(--paw-pink);
+            color: white;
+        }
+
+        .schedule-filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .filter-select {
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            padding: 5px 15px;
+            font-size: 14px;
+            background-color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .filter-select:hover {
+            border-color: var(--paw-pink);
+        }
+
+        /* 創作歷史區 */
+        .history-section {
+            margin-bottom: 30px;
+        }
+
+        .history-search {
+            display: flex;
+            margin-bottom: 15px;
+        }
+
+        .history-input {
+            flex: 1;
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 30px 0 0 30px;
+            font-size: 16px;
+        }
+
+        .history-button {
+            background: linear-gradient(to right, var(--paw-pink), var(--paw-blue));
+            color: white;
+            border: none;
+            border-radius: 0 30px 30px 0;
+            padding: 0 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .history-button:hover {
+            opacity: 0.9;
+        }
+
+        .history-tabs {
+            display: flex;
+            border-bottom: 2px solid var(--paw-peach);
+            margin-bottom: 20px;
+        }
+
+        .history-tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+            border-bottom: 3px solid transparent;
+        }
+
+        .history-tab.active {
+            border-bottom: 3px solid var(--paw-pink);
+            color: var(--paw-pink);
+        }
+
+        .history-tab:hover:not(.active) {
+            background-color: var(--paw-peach);
+        }
+
+        .history-content {
+            display: none;
+        }
+
+        .history-content.active {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+
+        .history-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 15px;
+        }
+
+        .history-item {
+            background-color: white;
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 3px 10px var(--paw-shadow);
+            transition: all 0.3s;
+        }
+
+        .history-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px var(--paw-shadow);
+        }
+
+        .history-title {
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .history-date {
+            font-size: 12px;
+            color: #777;
+            margin-bottom: 10px;
+        }
+
+        .history-preview {
+            font-size: 14px;
+            color: #555;
+            margin-bottom: 10px;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .history-actions {
+            display: flex;
+            gap: 5px;
+        }
+
+        .history-action {
+            background-color: #eee;
+            border: none;
+            border-radius: 5px;
+            padding: 5px 10px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+        }
+
+        .history-action i {
+            margin-right: 5px;
+        }
+
+        .history-action:hover {
+            background-color: var(--paw-pink);
+            color: white;
+        }
+
+        /* 任務與徽章區 */
+        .quest-section {
+            margin-bottom: 30px;
+        }
+
+        .quest-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .quest-card {
+            background-color: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 5px 15px var(--paw-shadow);
+        }
+
+        .quest-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+
+        .quest-title i {
+            margin-right: 10px;
+            color: var(--paw-pink);
+        }
+
+        .quest-item {
+            display: flex;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px dashed #eee;
+        }
+
+        .quest-item:last-child {
+            border-bottom: none;
+        }
+
+        .quest-icon {
+            width: 30px;
+            height: 30px;
+            background-color: var(--paw-peach);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-right: 10px;
+            flex-shrink: 0;
+        }
+
+        .quest-details {
+            flex: 1;
+        }
+
+        .quest-name {
+            font-weight: 500;
+            margin-bottom: 3px;
+        }
+
+        .quest-progress {
+            height: 5px;
+            background-color: #eee;
+            border-radius: 3px;
+            margin-top: 5px;
+            overflow: hidden;
+        }
+
+        .quest-progress-fill {
+            height: 100%;
+            background: linear-gradient(to right, var(--paw-blue), var(--paw-pink));
+            border-radius: 3px;
+            width: 30%;
+        }
+
+        .quest-reward {
+            font-size: 12px;
+            color: var(--paw-pink);
+            font-weight: 500;
+        }
+
+        .badge-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 15px;
+        }
+
+        .badge-item {
+            background-color: white;
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 3px 10px var(--paw-shadow);
+            text-align: center;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .badge-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px var(--paw-shadow);
+        }
+
+        .badge-icon {
+            width: 60px;
+            height: 60px;
+            background-color: var(--paw-blue);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0 auto 10px;
+            font-size: 24px;
+            color: white;
+        }
+
+        .badge-name {
+            font-weight: 500;
+            margin-bottom: 5px;
+        }
+
+        .badge-date {
+            font-size: 11px;
+            color: #777;
+        }
+
+        /* 帳號資訊區 */
+        .account-section {
+            margin-bottom: 30px;
+        }
+
+        .account-card {
+            background-color: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 5px 15px var(--paw-shadow);
+            margin-bottom: 20px;
+        }
+
+        .account-plan {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .plan-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, var(--paw-pink), var(--paw-blue));
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-right: 15px;
+            color: white;
+            font-size: 20px;
+        }
+
+        .plan-details {
+            flex: 1;
+        }
+
+        .plan-name {
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .plan-status {
+            font-size: 14px;
+            color: #777;
+        }
+
+        .plan-button {
+            background: linear-gradient(to right, var(--paw-pink), var(--paw-blue));
+            color: white;
+            border: none;
+            border-radius: 30px;
+            padding: 8px 20px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .plan-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .account-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background-color: var(--paw-peach);
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--paw-dark);
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: var(--paw-dark);
+        }
+
+        .account-connected {
+            margin-top: 20px;
+        }
+
+        .connected-title {
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .connected-list {
+            display: flex;
+            gap: 10px;
+        }
+
+        .connected-item {
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            padding: 8px 15px;
+            display: flex;
+            align-items: center;
+            font-size: 14px;
+        }
+
+        .connected-item i {
+            margin-right: 5px;
+            color: var(--paw-pink);
+        }
+
+        .theme-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .theme-option {
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            padding: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .theme-option:hover {
+            border-color: var(--paw-pink);
+        }
+
+        .theme-option.active {
+            border-color: var(--paw-pink);
+            background-color: rgba(245, 130, 174, 0.1);
+        }
+
+        .theme-preview {
+            width: 60px;
+            height: 60px;
+            border-radius: 10px;
+            margin: 0 auto 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+        }
+
+        .theme-name {
+            font-size: 14px;
+        }
+
+        /* AI 建議區 */
+        .ai-section {
+            margin-bottom: 30px;
+        }
+
+        .ai-card {
+            background-color: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 5px 15px var(--paw-shadow);
+            margin-bottom: 20px;
+        }
+
+        .ai-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .ai-avatar {
+            width: 50px;
+            height: 50px;
+            background-color: var(--paw-blue);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-right: 15px;
+            color: white;
+            font-size: 20px;
+        }
+
+        .ai-title {
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .ai-subtitle {
+            font-size: 14px;
+            color: #777;
+        }
+
+        .ai-message {
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+
+        .ai-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .ai-button {
+            background: linear-gradient(to right, var(--paw-pink), var(--paw-blue));
+            color: white;
+            border: none;
+            border-radius: 30px;
+            padding: 8px 20px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .ai-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .ai-button.secondary {
+            background: white;
+            color: var(--paw-dark);
+            border: 1px solid #ddd;
+        }
+
+        .ai-button.secondary:hover {
+            border-color: var(--paw-pink);
+        }
+
+        /* Footer */
+        footer {
+            background-color: var(--paw-dark);
+            color: white;
+            padding: 40px 0 20px;
+        }
+
+        .footer-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .footer-column h3 {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: var(--paw-blue);
+        }
+
+        .footer-column ul {
+            list-style: none;
+        }
+
+        .footer-column ul li {
+            margin-bottom: 10px;
+        }
+
+        .footer-column ul li a {
+            color: #ddd;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+
+        .footer-column ul li a:hover {
+            color: var(--paw-pink);
+            padding-left: 5px;
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 14px;
+            color: #aaa;
+        }
+
+        /* 響應式設計 */
+        @media (max-width: 768px) {
+            .profile-content {
+                flex-direction: column;
+            }
+            
+            .profile-avatar {
+                margin-right: 0;
+                margin-bottom: 20px;
+            }
+            
+            .profile-actions {
+                margin-left: 0;
+                margin-top: 20px;
+                flex-direction: row;
+                justify-content: center;
+            }
+            
+            .team-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            }
+            
+            .calendar-grid {
+                grid-template-columns: repeat(7, 1fr);
+            }
+            
+            .calendar-day {
+                min-height: 80px;
+            }
+            
+            .history-list, .schedule-list {
+                grid-template-columns: 1fr;
+            }
+            
+            .quest-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .badge-grid {
+                grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header-container {
+                flex-direction: column;
+            }
+            
+            nav ul {
+                margin-top: 15px;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            nav ul li {
+                margin-left: 10px;
+                margin-right: 10px;
+            }
+            
+            .profile-stats {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .stat-item {
+                min-width: 100px;
+                margin-bottom: 10px;
+            }
+            
+            .schedule-tabs, .history-tabs {
+                flex-wrap: wrap;
+            }
+            
+            .schedule-tab, .history-tab {
+                flex: 1;
+                text-align: center;
+                min-width: 100px;
+            }
+            
+            .calendar-day-header {
+                font-size: 12px;
+                padding: 5px;
+            }
+            
+            .calendar-day {
+                padding: 5px;
+                min-height: 60px;
+            }
+            
+            .calendar-event {
+                font-size: 10px;
+            }
+            
+            .account-stats {
+                grid-template-columns: 1fr;
+            }
+            
+            .theme-options {
+                grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            }
+        }
+    </style>
+</head>
+<body>
+  <div id="navbar-container"></div>
+  <script>
+    fetch('navbar.html')
+      .then(response => response.text())
+      .then(data => document.getElementById('navbar-container').innerHTML = data);
+  </script>
+
+    <div class="container">
+        <!-- 個人檔案區 -->
+        <section class="profile-section">
+            <div class="profile-bg"></div>
+            <div class="profile-content">
+                <div class="profile-avatar">
+                    <img src="https://placehold.co/120x120/8BD3DD/001858?text=用戶" alt="用戶頭像">
+                </div>
+                <div class="profile-info">
+                    <h1 class="profile-name">創意小編 <span class="profile-title">熱度探長</span></h1>
+                    <p class="profile-bio">專注於寵物與生活風格的內容創作者，喜歡分享實用資訊與有趣觀點。</p>
+                    <div class="profile-links">
+                        <a href="#" class="profile-link"><i class="fab fa-instagram"></i> @pawblish_user</a>
+                        <a href="#" class="profile-link"><i class="fab fa-twitter"></i> @pawblish_tw</a>
+                        <a href="#" class="profile-link"><i class="fas fa-link"></i> myblog.com</a>
+                    </div>
+                    <div class="profile-stats">
+                        <div class="stat-item">
+                            <div class="stat-number">128</div>
+                            <div class="stat-label">總產出</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">356</div>
+                            <div class="stat-label">總查詢</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">89</div>
+                            <div class="stat-label">活躍天數</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="profile-actions">
+                    <button class="profile-button"><i class="fas fa-edit"></i> 編輯資料</button>
+                    <button class="profile-button voice-button"><i class="fas fa-volume-up"></i> 角色語音</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- 角色小隊區 -->
+        <section class="team-section">
+            <h2 class="section-title"><i class="fas fa-users"></i> 我的角色小隊</h2>
+            <div class="team-grid">
+                <div class="character-card">
+                    <div class="character-avatar">🐧</div>
+                    <h3 class="character-name">探探</h3>
+                    <p class="character-role">熱門趨勢搜尋</p>
+                    <div class="level-bar">
+                        <div class="level-fill" style="width: 80%;"></div>
+                    </div>
+                    <div class="level-info">
+                        <span>Lv.4</span>
+                        <span>80%</span>
+                    </div>
+                </div>
+                
+                <div class="character-card">
+                    <div class="character-avatar">🐶</div>
+                    <h3 class="character-name">咚咚</h3>
+                    <p class="character-role">文章腳本生成</p>
+                    <div class="level-bar">
+                        <div class="level-fill" style="width: 65%;"></div>
+                    </div>
+                    <div class="level-info">
+                        <span>Lv.3</span>
+                        <span>65%</span>
+                    </div>
+                </div>
+                
+                <div class="character-card">
+                    <div class="character-avatar">🐻</div>
+                    <h3 class="character-name">汪咕</h3>
+                    <p class="character-role">排程教學引導</p>
+                    <div class="level-bar">
+                        <div class="level-fill" style="width: 40%;"></div>
+                    </div>
+                    <div class="level-info">
+                        <span>Lv.2</span>
+                        <span>40%</span>
+                    </div>
+                </div>
+                
+                <div class="character-card">
+                    <div class="character-avatar">🐘</div>
+                    <h3 class="character-name">咕比</h3>
+                    <p class="character-role">智能客服問答</p>
+                    <div class="level-bar">
+                        <div class="level-fill" style="width: 25%;"></div>
+                    </div>
+                    <div class="level-info">
+                        <span>Lv.1</span>
+                        <span>25%</span>
+                    </div>
+                </div>
+                
+                <div class="character-card">
+                    <div class="character-avatar">🦁</div>
+                    <h3 class="character-name">鈴鈴</h3>
+                    <p class="character-role">數據成效分析</p>
+                    <div class="level-bar">
+                        <div class="level-fill" style="width: 10%;"></div>
+                    </div>
+                    <div class="level-info">
+                        <span>Lv.1</span>
+                        <span>10%</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 排程管理區 -->
+        <section class="schedule-section">
+            <h2 class="section-title"><i class="fas fa-calendar-alt"></i> 內容排程管理</h2>
+            
+            <div class="schedule-tabs">
+                <div class="schedule-tab active" data-tab="calendar">月曆檢視</div>
+                <div class="schedule-tab" data-tab="list">列表檢視</div>
+            </div>
+            
+            <div class="schedule-content active" id="calendar-tab">
+                <div class="calendar-header">
+                    <div class="calendar-nav">
+                        <button class="calendar-nav-button"><i class="fas fa-chevron-left"></i></button>
+                        <div class="calendar-title">2023年7月</div>
+                        <button class="calendar-nav-button"><i class="fas fa-chevron-right"></i></button>
+                    </div>
+                    <div class="calendar-view">
+                        <button class="view-button">日</button>
+                        <button class="view-button active">週</button>
+                        <button class="view-button">月</button>
+                    </div>
+                </div>
+                
+                <div class="calendar-grid">
+                    <div class="calendar-day-header">週日</div>
+                    <div class="calendar-day-header">週一</div>
+                    <div class="calendar-day-header">週二</div>
+                    <div class="calendar-day-header">週三</div>
+                    <div class="calendar-day-header">週四</div>
+                    <div class="calendar-day-header">週五</div>
+                    <div class="calendar-day-header">週六</div>
+                    
+                    <!-- 日曆日期 -->
+                    <div class="calendar-day">
+                        <div class="day-number">25</div>
+                    </div>
+                    <div class="calendar-day">
+                        <div class="day-number">26</div>
+                    </div>
+                    <div class="calendar-day">
+                        <div class="day-number">27</div>
+                        <div class="calendar-event">寵物用品開箱</div>
+                    </div>
+                    <div class="calendar-day">
+                        <div class="day-number">28</div>
+                        <div class="calendar-event">夏日寵物穿搭</div>
+                    </div>
+                    <div class="calendar-day">
+                        <div class="day-number">29</div>
+                    </div>
+                    <div class="calendar-day">
+                        <div class="day-number">30</div>
+                        <div class="calendar-event">減醣食譜分享</div>
+                    </div>
+                    <div class="calendar-day">
+                        <div class="day-number">31</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="schedule-content" id="list-tab">
+                <div class="schedule-filters">
+                    <select class="filter-select">
+                        <option>全部主題</option>
+                        <option>寵物</option>
+                        <option>生活</option>
+                        <option>科技</option>
+                    </select>
+                    <select class="filter-select">
+                        <option>全部平台</option>
+                        <option>Instagram</option>
+                        <option>Facebook</option>
+                        <option>部落格</option>
+                    </select>
+                    <select class="filter-select">
+                        <option>全部狀態</option>
+                        <option>已發佈</option>
+                        <option>草稿</option>
+                        <option>排程中</option>
+                    </select>
+                    <select class="filter-select">
+                        <option>全部角色</option>
+                        <option>探探</option>
+                        <option>咚咚</option>
+                        <option>汪咕</option>
+                    </select>
+                </div>
+                
+                <div class="schedule-list">
+                    <div class="schedule-card">
+                        <h3 class="schedule-title">寵物用品開箱實測 <span class="schedule-status status-published">已發佈</span></h3>
+                        <div class="schedule-meta">
+                            <span><i class="far fa-calendar-alt"></i> 2023-07-27</span>
+                            <span class="schedule-character">探探</span>
+                        </div>
+                        <div class="schedule-actions">
+                            <button class="schedule-button"><i class="fas fa-edit"></i> 編輯</button>
+                            <button class="schedule-button"><i class="fas fa-trash-alt"></i> 刪除</button>
+                            <button class="schedule-button"><i class="fas fa-share-alt"></i> 分享</button>
+                        </div>
+                    </div>
+                    
+                    <div class="schedule-card">
+                        <h3 class="schedule-title">夏日寵物穿搭指南 <span class="schedule-status status-published">已發佈</span></h3>
+                        <div class="schedule-meta">
+                            <span><i class="far fa-calendar-alt"></i> 2023-07-28</span>
+                            <span class="schedule-character">咚咚</span>
+                        </div>
+                        <div class="schedule-actions">
+                            <button class="schedule-button"><i class="fas fa-edit"></i> 編輯</button>
+                            <button class="schedule-button"><i class="fas fa-trash-alt"></i> 刪除</button>
+                            <button class="schedule-button"><i class="fas fa-share-alt"></i> 分享</button>
+                        </div>
+                    </div>
+                    
+                    <div class="schedule-card">
+                        <h3 class="schedule-title">減醣食譜分享 <span class="schedule-status status-draft">草稿</span></h3>
+                        <div class="schedule-meta">
+                            <span><i class="far fa-calendar-alt"></i> 2023-07-30</span>
+                            <span class="schedule-character">咚咚</span>
+                        </div>
+                        <div class="schedule-actions">
+                            <button class="schedule-button"><i class="fas fa-edit"></i> 編輯</button>
+                            <button class="schedule-button"><i class="fas fa-trash-alt"></i> 刪除</button>
+                            <button class="schedule-button"><i class="fas fa-share-alt"></i> 分享</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 創作歷史區 -->
+        <section class="history-section">
+            <h2 class="section-title"><i class="fas fa-history"></i> 創作歷史紀錄</h2>
+            
+            <div class="history-search">
+                <input type="text" class="history-input" placeholder="搜尋歷史紀錄...">
+                <button class="history-button"><i class="fas fa-search"></i></button>
+            </div>
+            
+            <div class="history-tabs">
+                <div class="history-tab active" data-tab="trend">趨勢查詢</div>
+                <div class="history-tab" data-tab="script">腳本產出</div>
+                <div class="history-tab" data-tab="chat">客服對話</div>
+                <div class="history-tab" data-tab="task">任務紀錄</div>
+            </div>
+            
+            <div class="history-content active" id="trend-tab">
+                <div class="history-list">
+                    <div class="history-item">
+                        <h3 class="history-title">寵物用品 熱度分析</h3>
+                        <div class="history-date">2023-07-28</div>
+                        <p class="history-preview">過去30天搜尋熱度上升15%，相關關鍵字包括：寵物梳毛刷、貓砂推薦、狗狗玩具...</p>
+                        <div class="history-actions">
+                            <button class="history-action"><i class="fas fa-redo"></i> 重新查詢</button>
+                            <button class="history-action"><i class="fas fa-pen-fancy"></i> 套用腳本</button>
+                        </div>
+                    </div>
+                    
+                    <div class="history-item">
+                        <h3 class="history-title">夏日穿搭 地區比較</h3>
+                        <div class="history-date">2023-07-25</div>
+                        <p class="history-preview">台北市搜尋熱度最高，其次是台中市。最受歡迎的單品是防曬外套和涼感衣...</p>
+                        <div class="history-actions">
+                            <button class="history-action"><i class="fas fa-redo"></i> 重新查詢</button>
+                            <button class="history-action"><i class="fas fa-pen-fancy"></i> 套用腳本</button>
+                        </div>
+                    </div>
+                    
+                    <div class="history-item">
+                        <h3 class="history-title">減醣食譜 相關搜尋</h3>
+                        <div class="history-date">2023-07-20</div>
+                        <p class="history-preview">相關搜尋關鍵字：減醣早餐、低醣甜點、生酮食譜。搜尋族群以30-45歲女性為主...</p>
+                        <div class="history-actions">
+                            <button class="history-action"><i class="fas fa-redo"></i> 重新查詢</button>
+                            <button class="history-action"><i class="fas fa-pen-fancy"></i> 套用腳本</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="history-content" id="script-tab">
+                <div class="history-list">
+                    <div class="history-item">
+                        <h3 class="history-title">寵物用品開箱腳本</h3>
+                        <div class="history-date">2023-07-27</div>
+                        <p class="history-preview">開場：大家好！今天要來開箱三款熱門寵物梳毛刷... 重點比較：價格、材質、寵物接受度...</p>
+                        <div class="history-actions">
+                            <button class="history-action"><i class="fas fa-redo"></i> 重新生成</button>
+                            <button class="history-action"><i class="fas fa-copy"></i> 複製</button>
+                        </div>
+                    </div>
+                    
+                    <div class="history-item">
+                        <h3 class="history-title">夏日穿搭指南腳本</h3>
+                        <div class="history-date">2023-07-25</div>
+                        <p class="history-preview">標題：夏日寵物防曬穿搭5大重點！第一段：介紹夏日寵物防曬的重要性... 產品推薦：涼感衣、防曬帽...</p>
+                        <div class="history-actions">
+                            <button class="history-action"><i class="fas fa-redo"></i> 重新生成</button>
+                            <button class="history-action"><i class="fas fa-copy"></i> 複製</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="history-content" id="chat-tab">
+                <div class="history-list">
+                    <div class="history-item">
+                        <h3 class="history-title">如何提升內容互動率？</h3>
+                        <div class="history-date">2023-07-22</div>
+                        <p class="history-preview">用戶：有什麼方法可以提升貼文互動率？ 咕比：建議可以嘗試以下方法：1. 在標題使用問句 2. 加入投票功能 3. 在熱門時段發文...</p>
+                        <div class="history-actions">
+                            <button class="history-action"><i class="fas fa-bookmark"></i> 收藏</button>
+                            <button class="history-action"><i class="fas fa-share-alt"></i> 分享</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="history-content" id="task-tab">
+                <div class="history-list">
+                    <div class="history-item">
+                        <h3 class="history-title">完成「一週排程」任務</h3>
+                        <div class="history-date">2023-07-21</div>
+                        <p class="history-preview">恭喜完成任務！獎勵：探探角色經驗值+20、解鎖「排程達人」徽章...</p>
+                        <div class="history-actions">
+                            <button class="history-action"><i class="fas fa-trophy"></i> 查看徽章</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 任務與徽章區 -->
+        <section class="quest-section">
+            <h2 class="section-title"><i class="fas fa-tasks"></i> 任務與成就</h2>
+            
+            <div class="quest-grid">
+                <div class="quest-card">
+                    <h3 class="quest-title"><i class="fas fa-list-check"></i> 進行中任務</h3>
+                    
+                    <div class="quest-item">
+                        <div class="quest-icon">1</div>
+                        <div class="quest-details">
+                            <div class="quest-name">查詢10次熱度</div>
+                            <div class="quest-progress">
+                                <div class="quest-progress-fill" style="width: 70%;"></div>
+                            </div>
+                            <div class="quest-reward">獎勵: 探探經驗值+30</div>
+                        </div>
+                    </div>
+                    
+                    <div class="quest-item">
+                        <div class="quest-icon">2</div>
+                        <div class="quest-details">
+                            <div class="quest-name">發佈5篇腳本</div>
+                            <div class="quest-progress">
+                                <div class="quest-progress-fill" style="width: 40%;"></div>
+                            </div>
+                            <div class="quest-reward">獎勵: 咚咚經驗值+50</div>
+                        </div>
+                    </div>
+                    
+                    <div class="quest-item">
+                        <div class="quest-icon">3</div>
+                        <div class="quest-details">
+                            <div class="quest-name">完成1週排程</div>
+                            <div class="quest-progress">
+                                <div class="quest-progress-fill" style="width: 20%;"></div>
+                            </div>
+                            <div class="quest-reward">獎勵: 汪咕經驗值+40</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="quest-card">
+                    <h3 class="quest-title"><i class="fas fa-trophy"></i> 已解鎖徽章</h3>
+                    
+                    <div class="badge-grid">
+                        <div class="badge-item">
+                            <div class="badge-icon">🏆</div>
+                            <div class="badge-name">熱度探長</div>
+                            <div class="badge-date">2023-07-15</div>
+                        </div>
+                        
+                        <div class="badge-item">
+                            <div class="badge-icon">🎯</div>
+                            <div class="badge-name">腳本新手</div>
+                            <div class="badge-date">2023-07-10</div>
+                        </div>
+                        
+                        <div class="badge-item">
+                            <div class="badge-icon">📅</div>
+                            <div class="badge-name">排程初學者</div>
+                            <div class="badge-date">2023-07-05</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 帳號資訊區 -->
+        <section class="account-section">
+            <h2 class="section-title"><i class="fas fa-cog"></i> 帳號設定</h2>
+            
+            <div class="account-card">
+                <div class="account-plan">
+                    <div class="plan-icon"><i class="fas fa-crown"></i></div>
+                    <div class="plan-details">
+                        <div class="plan-name">進階會員</div>
+                        <div class="plan-status">到期日: 2023-08-31</div>
+                    </div>
+                    <button class="plan-button">升級方案</button>
+                </div>
+                
+                <div class="account-stats">
+                    <div class="stat-card">
+                        <div class="stat-value">128/500</div>
+                        <div class="stat-label">腳本生成次數</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">356/1000</div>
+                        <div class="stat-label">趨勢查詢次數</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">20/50</div>
+                        <div class="stat-label">排程內容數</div>
+                    </div>
+                </div>
+                
+                <div class="account-connected">
+                    <div class="connected-title">已連結帳號</div>
+                    <div class="connected-list">
+                        <div class="connected-item"><i class="fab fa-google"></i> Google</div>
+                        <div class="connected-item"><i class="fab fa-line"></i> LINE</div>
+                        <button class="connected-item" style="background-color: var(--paw-peach);"><i class="fas fa-plus"></i> 新增</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="account-card">
+                <h3 class="section-title" style="margin-bottom: 15px;"><i class="fas fa-palette"></i> 主題設定</h3>
+                
+                <div class="theme-options">
+                    <div class="theme-option active">
+                        <div class="theme-preview" style="background-color: #FEF6E4; color: #001858;">A</div>
+                        <div class="theme-name">淺色主題</div>
+                    </div>
+                    <div class="theme-option">
+                        <div class="theme-preview" style="background-color: #001858; color: #FEF6E4;">B</div>
+                        <div class="theme-name">深色主題</div>
+                    </div>
+                    <div class="theme-option">
+                        <div class="theme-preview" style="background-color: #F582AE; color: #FEF6E4;">C</div>
+                        <div class="theme-name">粉紅主題</div>
+                    </div>
+                    <div class="theme-option">
+                        <div class="theme-preview" style="background-color: #8BD3DD; color: #001858;">D</div>
+                        <div class="theme-name">藍色主題</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- AI 建議區 -->
+        <section class="ai-section">
+            <h2 class="section-title"><i class="fas fa-robot"></i> AI 個人化建議</h2>
+            
+            <div class="ai-card">
+                <div class="ai-header">
+                    <div class="ai-avatar">🐧</div>
+                    <div>
+                        <div class="ai-title">探探的建議</div>
+                        <div class="ai-subtitle">根據你的搜尋習慣</div>
+                    </div>
+                </div>
+                <div class="ai-message">
+                    「你經常查詢寵物用品相關趨勢，最近『寵物防暑用品』的搜尋量上升了35%，要不要考慮創作相關內容呢？我可以幫你分析更多細節！」
+                </div>
+                <div class="ai-actions">
+                    <button class="ai-button">查看趨勢分析</button>
+                    <button class="ai-button secondary">稍後再說</button>
+                </div>
+            </div>
+            
+            <div class="ai-card">
+                <div class="ai-header">
+                    <div class="ai-avatar">🦁</div>
+                    <div>
+                        <div class="ai-title">鈴鈴的報告</div>
+                        <div class="ai-subtitle">上週內容表現分析</div>
+                    </div>
+                </div>
+                <div class="ai-message">
+                    「你上週發佈的『寵物梳毛刷比較』表現優秀，互動率比平均高42%！類似的實測型內容在你的觀眾中特別受歡迎。需要我幫你規劃下一期的內容主題嗎？」
+                </div>
+                <div class="ai-actions">
+                    <button class="ai-button">查看完整報告</button>
+                    <button class="ai-button secondary">開始規劃</button>
+                </div>
+            </div>
+        </section>
+    </div>
+    
+    <footer>
+        <div class="container">
+            <div class="footer-container">
+                <div class="footer-column">
+                    <h3>Pawblish</h3>
+                    <ul>
+                        <li><a href="#">關於我們</a></li>
+                        <li><a href="#">服務條款</a></li>
+                        <li><a href="#">隱私政策</a></li>
+                        <li><a href="#">聯絡我們</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-column">
+                    <h3>創作工具</h3>
+                    <ul>
+                        <li><a href="#">腳本工坊</a></li>
+                        <li><a href="#">內容排程</a></li>
+                        <li><a href="#">趨勢分析</a></li>
+                        <li><a href="#">AI 輔助</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-column">
+                    <h3>學習資源</h3>
+                    <ul>
+                        <li><a href="#">教學中心</a></li>
+                        <li><a href="#">成功案例</a></li>
+                        <li><a href="#">部落格</a></li>
+                        <li><a href="#">常見問題</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-column">
+                    <h3>開始創作</h3>
+                    <p>立即使用 Pawblish 打造您的爆紅內容</p>
+                    <a href="#" class="cta-button">免費試用 <i class="fas fa-arrow-right"></i></a>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2023 Pawblish. All Rights Reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script>
+        // 切換標籤頁功能
+        function setupTabs(tabClass, contentClass) {
+            document.querySelectorAll(`.${tabClass}`).forEach(tab => {
+                tab.addEventListener('click', () => {
+                    // 移除所有active類
+                    document.querySelectorAll(`.${tabClass}`).forEach(t => t.classList.remove('active'));
+                    document.querySelectorAll(`.${contentClass}`).forEach(c => c.classList.remove('active'));
+                    
+                    // 添加active類到當前標籤
+                    tab.classList.add('active');
+                    const tabId = tab.getAttribute('data-tab');
+                    document.getElementById(`${tabId}-tab`).classList.add('active');
+                });
+            });
+        }
+
+        // 初始化所有標籤頁
+        setupTabs('tab', 'tab-content');
+        setupTabs('schedule-tab', 'schedule-content');
+        setupTabs('history-tab', 'history-content');
+
+        // 角色卡片點擊效果
+        document.querySelectorAll('.character-card').forEach(card => {
+            card.addEventListener('click', function() {
+                const characterName = this.querySelector('.character-name').textContent;
+                alert(`查看 ${characterName} 的詳細資訊`);
+            });
+        });
+
+        // 日曆事件點擊
+        document.querySelectorAll('.calendar-event').forEach(event => {
+            event.addEventListener('click', function(e) {
+                e.stopPropagation();
+                alert(`查看排程: ${this.textContent}`);
+            });
+        });
+
+        // 日曆日期點擊
+        document.querySelectorAll('.calendar-day').forEach(day => {
+            day.addEventListener('click', function() {
+                const dayNumber = this.querySelector('.day-number').textContent;
+                alert(`新增 ${dayNumber} 日的排程`);
+            });
+        });
+
+        // 主題選擇
+        document.querySelectorAll('.theme-option').forEach(option => {
+            option.addEventListener('click', function() {
+                document.querySelectorAll('.theme-option').forEach(opt => opt.classList.remove('active'));
+                this.classList.add('active');
+                // 這裡可以添加實際的主題切換邏輯
+            });
+        });
+
+        // 初始化日期選擇器
+        flatpickr(".history-input", {
+            enableTime: false,
+            dateFormat: "Y-m-d",
+            mode: "range"
+        });
+
+        // 視窗大小改變時調整佈局
+        window.addEventListener('resize', function() {
+            // 這裡可以添加響應式調整的邏輯
+        });
+    </script>
+</body>
+</html>

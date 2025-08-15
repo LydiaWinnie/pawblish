@@ -1,0 +1,165 @@
+    <style>
+        :root {
+            --paw-pink: #F582AE;
+            --paw-blue: #8BD3DD;
+            --paw-dark: #001858;
+        --glass-bg: rgba(255, 255, 255, 0.85);
+        --glass-border: rgba(255, 255, 255, 0.55);
+        --glow: 0 8px 22px rgba(245, 130, 174, 0.2), 0 6px 16px rgba(139, 211, 221, 0.2);
+        }
+        .universal-navbar {
+            width: 100%;
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--glass-border);
+        box-shadow: var(--glow);
+            position: fixed;
+        top: 0; left: 0;
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+    .universal-navbar .nav-container {
+        max-width: 1200px; margin: 0 auto; padding: 0 20px;
+        display: flex; justify-content: space-between; align-items: center; height: 70px; gap: 8px;
+    }
+    .universal-navbar .nav-brand { display: flex; align-items: center; text-decoration: none; transition: transform 0.3s; }
+    .universal-navbar .nav-brand:hover { transform: translateY(-1px); }
+    .universal-navbar .paw-mark { width: 40px; height: 40px; background: linear-gradient(135deg, var(--paw-pink), var(--paw-blue)); border-radius: 50%; display: flex; justify-content: center; align-items: center; margin-right: 12px; color: white; font-size: 18px; position: relative; overflow: hidden; box-shadow: var(--glow); }
+    .universal-navbar .brand-name { font-size: 22px; font-weight: 800; color: var(--paw-dark); letter-spacing: 0.5px; }
+    .universal-navbar .nav-menu { display: flex; list-style: none; gap: 8px; flex-wrap: nowrap; align-items: center; overflow-x: auto; overflow-y: hidden; min-width: 0; flex: 1; justify-content: center; }
+    .universal-navbar .nav-menu::-webkit-scrollbar { height: 0; }
+    .universal-navbar .nav-link { color: var(--paw-dark); text-decoration: none; font-weight: 600; padding: 10px 14px; border-radius: 999px; transition: all 0.3s ease; display: flex; align-items: center; font-size: 14px; position: relative; white-space: nowrap; }
+    .universal-navbar .nav-link i { margin-right: 8px; font-size: 16px; width: 18px; text-align: center; }
+    .universal-navbar .nav-link:hover { color: var(--paw-pink); background: rgba(245,130,174,0.08); box-shadow: var(--glow); transform: translateY(-1px); }
+    .universal-navbar .nav-link.active { color: var(--paw-pink); font-weight: 700; background: rgba(245,130,174,0.12); box-shadow: inset 0 0 0 1px rgba(245,130,174,0.25); }
+    .universal-navbar .user-section { display: flex; align-items: center; gap: 12px; flex-shrink: 0; position: relative; }
+    .universal-navbar .nav-brand { flex-shrink: 0; }
+    .universal-navbar .notification-icon, .universal-navbar .user-avatar { position: relative; color: var(--paw-dark); font-size: 16px; cursor: pointer; transition: all 0.3s; width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; border-radius: 50%; }
+    .universal-navbar .notification-icon:hover, .universal-navbar .user-avatar:hover { background: rgba(0,0,0,0.05); color: var(--paw-pink); box-shadow: var(--glow); }
+    .universal-navbar .notification-badge { position: absolute; top: 2px; right: 2px; background: var(--paw-pink); color: white; font-size: 10px; font-weight: bold; width: 16px; height: 16px; border-radius: 50%; display: flex; justify-content: center; align-items: center; }
+    .universal-navbar .user-avatar { background: linear-gradient(135deg, var(--paw-pink), var(--paw-blue)); color: white; }
+    /* 使用者下拉選單 */
+    .universal-navbar .user-dropdown { position: absolute; top: 60px; right: 0; background: var(--glass-bg); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid var(--glass-border); border-radius: 12px; box-shadow: var(--glow); padding: 8px; display: none; min-width: 180px; z-index: 1200; }
+    .universal-navbar .user-dropdown.open { display: block; }
+    .universal-navbar .user-dropdown .dropdown-link { display: flex; align-items: center; gap: 8px; padding: 10px 12px; color: var(--paw-dark); text-decoration: none; border-radius: 10px; font-weight: 600; white-space: nowrap; }
+    .universal-navbar .user-dropdown .dropdown-link i { width: 18px; text-align: center; }
+    .universal-navbar .user-dropdown .dropdown-link:hover { background: rgba(0,0,0,0.05); color: var(--paw-pink); box-shadow: var(--glow); }
+    body.night-mode .user-dropdown { background: rgba(10,18,32,0.85); border-color: rgba(255,255,255,0.12); box-shadow: 0 10px 30px rgba(0,0,0,0.45); }
+    body.night-mode .user-dropdown .dropdown-link { color: #e8ecf1; }
+    body.night-mode .user-dropdown .dropdown-link:hover { background: rgba(255,255,255,0.06); }
+    /* 防止全站 .nav-link 動畫干擾 */
+    .universal-navbar .nav-link::before,
+    .universal-navbar .nav-link::after { content: none !important; }
+    /* night mode */
+    body.night-mode .universal-navbar { background: rgba(10,18,32,0.5); border-color: rgba(255,255,255,0.12); box-shadow: 0 8px 22px rgba(0,0,0,0.45); }
+    body.night-mode .nav-link { color: #e8ecf1; }
+    body.night-mode .nav-link:hover { background: rgba(255,255,255,0.06); }
+    body.night-mode .brand-name { color: #e8ecf1; }
+    @media (max-width: 1200px) {
+        .universal-navbar .nav-container { padding: 0 12px; }
+        .universal-navbar .nav-menu { gap: 6px; }
+        .universal-navbar .nav-link { padding: 8px 10px; font-size: 13px; }
+    }
+    @media (max-width: 1100px) { .universal-navbar .nav-link span { display: none; } }
+    @media (max-width: 992px) { .universal-navbar .nav-menu { display: none; } }
+</style>
+
+    <nav class="universal-navbar">
+        <div class="nav-container">
+            <a href="index.html" class="nav-brand">
+                <div class="paw-mark">
+                    <i class="fas fa-paw"></i>
+                </div>
+                <span class="brand-name">PAWBLISH</span>
+            </a>
+            <ul class="nav-menu">
+            <li class="nav-item"><a href="index.html" class="nav-link"><i class="fas fa-home"></i><span>小爪首頁</span></a></li>
+            <li class="nav-item"><a href="about.html" class="nav-link"><i class="fas fa-star"></i><span>小夥伴介紹</span></a></li>
+            <li class="nav-item"><a href="trend.html" class="nav-link"><i class="fas fa-fire"></i><span>熱門趨勢</span></a></li>
+            <li class="nav-item"><a href="script.html" class="nav-link"><i class="fas fa-scroll"></i><span>腳本工坊</span></a></li>
+            <li class="nav-item"><a href="planner.html" class="nav-link"><i class="fas fa-calendar-alt"></i><span>內容規劃</span></a></li>
+            <li class="nav-item"><a href="assistant.html" class="nav-link"><i class="fas fa-robot"></i><span>AI 小幫手</span></a></li>
+            <li class="nav-item"><a href="member.html" class="nav-link"><i class="fas fa-user"></i><span>會員中心</span></a></li>
+            </ul>
+        <div class="user-section">
+            <div class="notification-icon"><i class="fas fa-bell"></i><span class="notification-badge">3</span></div>
+            <div class="user-avatar" id="userMenuToggle" aria-haspopup="true" aria-expanded="false"><i class="fas fa-user"></i></div>
+            <div class="user-dropdown" id="userDropdown" role="menu" aria-labelledby="userMenuToggle">
+                <a class="dropdown-link" href="login.html"><i class="fas fa-sign-in-alt"></i> 登入</a>
+                <a class="dropdown-link" href="register.html"><i class="fas fa-user-plus"></i> 註冊</a>
+            </div>
+        </div>
+        </div>
+    <script>
+        // 滾動時導航欄效果
+        window.addEventListener('scroll', function() {
+            const navbar = document.querySelector('.universal-navbar');
+            if (!navbar) return;
+            if (window.scrollY > 20) {
+                navbar.style.boxShadow = '0 10px 30px rgba(0,0,0,0.15)';
+                navbar.style.background = 'rgba(255,255,255,0.92)';
+            } else {
+                navbar.style.boxShadow = 'var(--glow)';
+                navbar.style.background = 'var(--glass-bg)';
+            }
+        });
+        // 當前頁面導航項目高亮 + 動態預留空間 + 使用者下拉
+        (function() {
+            const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+            const navLinks = document.querySelectorAll('.nav-link');
+            navLinks.forEach(link => {
+                const linkHref = link.getAttribute('href');
+                if (currentPage === linkHref) link.classList.add('active');
+                else link.classList.remove('active');
+            });
+
+            const setNavbarSpace = () => {
+                const nav = document.querySelector('.universal-navbar');
+                if (!nav) return;
+                const h = nav.offsetHeight;
+                // 若頁面使用 #navbar-container 包住 navbar，則直接給它高度
+                const holder = document.getElementById('navbar-container');
+                if (holder) {
+                    holder.style.height = h + 'px';
+                    holder.style.display = 'block';
+                } else {
+                    // 沒有 holder 就改用 body paddingTop 作為回退
+                    document.body.style.paddingTop = h + 'px';
+                }
+                document.documentElement.style.setProperty('--navbar-height', h + 'px');
+            };
+            // 初始與延遲校正（避免字體載入改變高度）
+            setNavbarSpace();
+            setTimeout(setNavbarSpace, 300);
+            window.addEventListener('resize', setNavbarSpace);
+
+            // 使用者選單開關
+            const toggle = document.getElementById('userMenuToggle');
+            const dropdown = document.getElementById('userDropdown');
+            if (toggle && dropdown) {
+                const closeDropdown = () => {
+                    dropdown.classList.remove('open');
+                    toggle.setAttribute('aria-expanded', 'false');
+                };
+                const openDropdown = () => {
+                    dropdown.classList.add('open');
+                    toggle.setAttribute('aria-expanded', 'true');
+                };
+                toggle.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    if (dropdown.classList.contains('open')) closeDropdown();
+                    else openDropdown();
+                });
+                // 點擊外部關閉
+                document.addEventListener('click', (e) => {
+                    if (!dropdown.contains(e.target) && e.target !== toggle) closeDropdown();
+                });
+                // 捲動關閉
+                window.addEventListener('scroll', closeDropdown, { passive: true });
+                // Esc 關閉
+                document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeDropdown(); });
+            }
+        })();
+    </script>
+</nav>

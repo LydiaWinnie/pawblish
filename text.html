@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>測試頁面</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-white text-black">
+
+  <h1 class="text-3xl font-bold text-center mt-20">Hello PawMetrics!</h1>
+
+  <canvas id="myChart" class="w-full max-w-xl mx-auto mt-10"></canvas>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    const ctx = document.getElementById('myChart');
+    new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: ['一', '二', '三', '四', '五', '六', '日'],
+        datasets: [{
+          label: '觀看次數',
+          data: [10, 20, 15, 30, 40, 35, 50],
+          borderColor: '#f582ae',
+          borderWidth: 2
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: { beginAtZero: true }
+        }
+      }
+    });
+  </script>
+
+</body>
+</html>

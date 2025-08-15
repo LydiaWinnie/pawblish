@@ -1,0 +1,1993 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pawblish - 熱門趨勢分析</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <style>
+        :root {
+            --paw-pink: #F582AE;
+            --paw-blue: #8BD3DD;
+            --paw-cream: #FEF6E4;
+            --paw-peach: #F3D2C1;
+            --paw-dark: #001858;
+            --paw-light: #FFFFFF;
+            --paw-shadow: rgba(0, 24, 88, 0.1);
+            --paw-green: #8BDD9F;
+            --paw-purple: #B582F5;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: var(--paw-cream);
+            color: var(--paw-dark);
+            line-height: 1.6;
+            /* 避免固定導覽列遮擋錨點/標題 */
+            scroll-padding-top: var(--navbar-height, 80px);
+        }
+        /* 預留導覽列高度，避免進場時被擋住 */
+        #navbar-container { height: var(--navbar-height, 70px); display: block; }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* 動畫效果 */
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes bounceIn {
+            from, 20%, 40%, 60%, 80%, to {
+                animation-timing-function: cubic-bezier(0.215, 0.610, 0.355, 1.000);
+            }
+            0% {
+                opacity: 0;
+                transform: scale3d(.3, .3, .3);
+            }
+            20% {
+                transform: scale3d(1.1, 1.1, 1.1);
+            }
+            40% {
+                transform: scale3d(.9, .9, .9);
+            }
+            60% {
+                opacity: 1;
+                transform: scale3d(1.03, 1.03, 1.03);
+            }
+            80% {
+                transform: scale3d(.97, .97, .97);
+            }
+            to {
+                opacity: 1;
+                transform: scale3d(1, 1, 1);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes floating {
+            0% {
+                transform: translateY(0px);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+            100% {
+                transform: translateY(0px);
+            }
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        @keyframes unlock {
+            0% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(245, 130, 174, 0.4);
+            }
+            70% {
+                transform: scale(1.05);
+                box-shadow: 0 0 0 10px rgba(245, 130, 174, 0);
+            }
+            100% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(245, 130, 174, 0);
+            }
+        }
+
+        /* Header 樣式 */
+        header {
+            background: linear-gradient(135deg, var(--paw-pink), var(--paw-blue));
+            color: white;
+            padding: 15px 0;
+            box-shadow: 0 4px 12px var(--paw-shadow);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .logo i {
+            margin-right: 10px;
+            animation: floating 3s ease-in-out infinite;
+        }
+
+        nav ul {
+            display: flex;
+            list-style: none;
+        }
+
+        nav ul li {
+            margin-left: 20px;
+        }
+
+        nav ul li a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            padding: 8px 12px;
+            border-radius: 20px;
+        }
+
+        nav ul li a:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        nav ul li a.active {
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Hero 區 */
+        .hero {
+            padding: 60px 0 40px;
+            background: linear-gradient(to bottom, var(--paw-pink), var(--paw-cream));
+            border-radius: 0 0 30px 30px;
+            margin-bottom: 30px;
+            animation: fadeInDown 0.8s ease-out;
+        }
+
+        .hero-content {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .hero-text {
+            flex: 1;
+            min-width: 300px;
+            padding-right: 20px;
+        }
+
+        .hero-image {
+            flex: 1;
+            min-width: 300px;
+            text-align: center;
+            position: relative;
+        }
+
+        .tantan-character {
+            width: 180px;
+            height: 180px;
+            background-color: var(--paw-blue);
+            border-radius: 50%;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            position: relative;
+            animation: bounceIn 1s;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .tantan-character:hover {
+            transform: scale(1.05);
+        }
+
+        .tantan-character img {
+            width: 80%;
+            height: 80%;
+            object-fit: contain;
+        }
+
+        .speech-bubble {
+            position: absolute;
+            top: -50px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: white;
+            padding: 12px 18px;
+            border-radius: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            font-weight: 500;
+            width: max-content;
+            max-width: 250px;
+            z-index: 10;
+        }
+
+        .speech-bubble:after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            margin-left: -10px;
+            border-width: 10px 10px 0;
+            border-style: solid;
+            border-color: white transparent transparent;
+        }
+
+        .search-container {
+            margin-top: 30px;
+            position: relative;
+            max-width: 600px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 15px 20px;
+            border: none;
+            border-radius: 30px;
+            font-size: 18px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s;
+        }
+
+        .search-input:focus {
+            outline: none;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .search-button {
+            position: absolute;
+            right: 5px;
+            top: 5px;
+            background: linear-gradient(to right, var(--paw-pink), var(--paw-blue));
+            color: white;
+            border: none;
+            border-radius: 25px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .search-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .trending-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .trending-tag {
+            background-color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            animation: bounceIn 0.6s;
+            animation-delay: calc(var(--delay) * 0.1s);
+            display: flex;
+            align-items: center;
+        }
+
+        .trending-tag:hover {
+            background-color: var(--paw-pink);
+            color: white;
+            transform: translateY(-3px);
+        }
+
+        .trending-tag i {
+            margin-right: 5px;
+        }
+
+        /* 搜索历史下拉 */
+        .search-history {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border-radius: 0 0 15px 15px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            z-index: 10;
+            max-height: 200px;
+            overflow-y: auto;
+            display: none;
+        }
+
+        .history-item {
+            padding: 10px 15px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .history-item:hover {
+            background-color: #f9f9f9;
+        }
+
+        .history-item .remove {
+            color: #aaa;
+            padding: 5px;
+        }
+
+        .history-item .remove:hover {
+            color: var(--paw-pink);
+        }
+
+        /* 主內容區 */
+        .main-content {
+            padding: 20px 0 40px;
+        }
+
+        .section-title {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: var(--paw-dark);
+            display: flex;
+            align-items: center;
+        }
+
+        .section-title i {
+            margin-right: 10px;
+            color: var(--paw-pink);
+        }
+
+        .section-actions {
+            margin-left: auto;
+            display: flex;
+            gap: 10px;
+        }
+
+        .action-btn {
+            background: var(--paw-peach);
+            border: none;
+            border-radius: 20px;
+            padding: 8px 15px;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            transition: all 0.3s;
+        }
+
+        .action-btn:hover {
+            background: var(--paw-pink);
+            color: white;
+        }
+
+        .action-btn i {
+            margin-right: 5px;
+        }
+
+        /* 趨勢圖區 */
+        .trend-section {
+            background-color: white;
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 15px var(--paw-shadow);
+            animation: fadeInUp 0.8s;
+        }
+
+        .tab-container {
+            display: flex;
+            border-bottom: 2px solid var(--paw-peach);
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+            border-bottom: 3px solid transparent;
+            display: flex;
+            align-items: center;
+        }
+
+        .tab i {
+            margin-right: 8px;
+        }
+
+        .tab.active {
+            border-bottom: 3px solid var(--paw-pink);
+            color: var(--paw-pink);
+        }
+
+        .tab:hover:not(.active) {
+            background-color: var(--paw-peach);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .chart-container {
+            height: 400px;
+            width: 100%;
+            margin-top: 20px;
+            position: relative;
+        }
+
+        .chart-actions {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            gap: 10px;
+            z-index: 5;
+        }
+
+        .chart-btn {
+            background: white;
+            border: 1px solid #eee;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .chart-btn:hover {
+            background: var(--paw-pink);
+            color: white;
+            border-color: var(--paw-pink);
+        }
+
+        .time-filter {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .time-btn {
+            background: var(--paw-cream);
+            border: none;
+            border-radius: 20px;
+            padding: 5px 15px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .time-btn.active {
+            background: var(--paw-pink);
+            color: white;
+        }
+
+        /* 延伸靈感區 */
+        .inspiration-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .inspiration-card {
+            background-color: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 5px 15px var(--paw-shadow);
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .inspiration-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px var(--paw-shadow);
+        }
+
+        .inspiration-type {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: 500;
+            margin-bottom: 10px;
+        }
+
+        .type-post {
+            background-color: #FFD6E0;
+            color: #C41E3A;
+        }
+
+        .type-video {
+            background-color: #C4E8FF;
+            color: #1E63C4;
+        }
+
+        .type-guide {
+            background-color: #D8FFC4;
+            color: #3AC41E;
+        }
+
+        .type-seo {
+            background-color: #FFE8C4;
+            color: #C47E1E;
+        }
+
+        .inspiration-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .inspiration-desc {
+            font-size: 14px;
+            color: #555;
+            margin-bottom: 15px;
+        }
+
+        .inspiration-stats {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #777;
+        }
+
+        .inspiration-cta {
+            background-color: var(--paw-blue);
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 8px 15px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 15px;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .inspiration-cta i {
+            margin-right: 8px;
+        }
+
+        .inspiration-cta:hover {
+            background-color: var(--paw-pink);
+        }
+
+        .save-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(255,255,255,0.8);
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .save-btn:hover {
+            background: var(--paw-pink);
+            color: white;
+        }
+
+        /* 熱度下載區 */
+        .download-section {
+            background: linear-gradient(135deg, var(--paw-blue), var(--paw-pink));
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            color: white;
+            text-align: center;
+            box-shadow: 0 5px 15px var(--paw-shadow);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .download-title {
+            font-size: 22px;
+            margin-bottom: 15px;
+        }
+
+        .download-desc {
+            margin-bottom: 20px;
+            opacity: 0.9;
+        }
+
+        .sticker-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .sticker {
+            width: 100px;
+            height: 100px;
+            background-color: white;
+            border-radius: 15px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: var(--paw-dark);
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .sticker.locked {
+            filter: grayscale(80%);
+            opacity: 0.7;
+        }
+
+        .sticker.unlocked:hover {
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        .sticker.unlocking {
+            animation: unlock 1s ease;
+        }
+
+        .sticker-icon {
+            font-size: 30px;
+            margin-bottom: 5px;
+        }
+
+        .sticker-name {
+            font-size: 12px;
+            font-weight: 500;
+            text-align: center;
+            padding: 0 5px;
+        }
+
+        .sticker-value {
+            position: absolute;
+            bottom: 5px;
+            right: 5px;
+            background-color: var(--paw-pink);
+            color: white;
+            font-size: 10px;
+            padding: 2px 5px;
+            border-radius: 10px;
+        }
+
+        .progress-container {
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 10px;
+            margin-top: 20px;
+            position: relative;
+        }
+
+        .progress-text {
+            margin-bottom: 10px;
+            font-weight: 500;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .progress-bar {
+            height: 10px;
+            background-color: rgba(255, 255, 255, 0.3);
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 30%;
+            background-color: white;
+            border-radius: 5px;
+            transition: width 0.5s ease;
+        }
+
+        .achievement-badge {
+            position: absolute;
+            top: -20px;
+            right: 20px;
+            background: var(--paw-green);
+            color: var(--paw-dark);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: 700;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            transform: rotate(5deg);
+        }
+
+        /* 查詢紀錄區 */
+        .history-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .history-card {
+            background-color: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 5px 15px var(--paw-shadow);
+            position: relative;
+        }
+
+        .history-tabs {
+            display: flex;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 15px;
+        }
+
+        .history-tab {
+            padding: 8px 15px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .history-tab.active {
+            border-bottom: 2px solid var(--paw-pink);
+            color: var(--paw-pink);
+            font-weight: 500;
+        }
+
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px dashed #eee;
+            font-size: 14px;
+        }
+
+        .history-item:last-child {
+            border-bottom: none;
+        }
+
+        .history-keyword {
+            color: var(--paw-dark);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+        }
+
+        .history-keyword i {
+            margin-right: 8px;
+            color: #aaa;
+        }
+
+        .history-keyword:hover {
+            color: var(--paw-pink);
+            text-decoration: underline;
+        }
+
+        .history-count {
+            color: #777;
+        }
+
+        .rank-item {
+            display: flex;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px dashed #eee;
+        }
+
+        .rank-number {
+            width: 25px;
+            height: 25px;
+            background-color: var(--paw-peach);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 12px;
+            font-weight: 700;
+            margin-right: 10px;
+        }
+
+        .rank-number.top {
+            background-color: var(--paw-pink);
+            color: white;
+        }
+
+        .rank-keyword {
+            flex: 1;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .rank-keyword:hover {
+            color: var(--paw-pink);
+        }
+
+        .rank-value {
+            color: var(--paw-pink);
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .history-filter {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .filter-select {
+            background: var(--paw-cream);
+            border: 1px solid #eee;
+            border-radius: 20px;
+            padding: 5px 15px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        /* 探探小語區 */
+        .tantan-section {
+            background-color: var(--paw-peach);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 5px 15px var(--paw-shadow);
+        }
+
+        .tantan-avatar {
+            width: 80px;
+            height: 80px;
+            background-color: var(--paw-blue);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-right: 20px;
+            flex-shrink: 0;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .tantan-avatar:hover {
+            transform: rotate(10deg);
+        }
+
+        .tantan-avatar img {
+            width: 60%;
+            height: 60%;
+            object-fit: contain;
+        }
+
+        .tantan-message {
+            flex: 1;
+        }
+
+        .tantan-text {
+            font-style: italic;
+            margin-bottom: 10px;
+        }
+
+        .tantan-tip {
+            font-size: 14px;
+            color: #555;
+            display: flex;
+            align-items: center;
+        }
+
+        .tantan-tip i {
+            margin-right: 8px;
+            color: var(--paw-pink);
+        }
+
+        .tantan-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .tantan-btn {
+            background: rgba(255,255,255,0.5);
+            border: none;
+            border-radius: 20px;
+            padding: 6px 15px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+        }
+
+        .tantan-btn:hover {
+            background: var(--paw-pink);
+            color: white;
+        }
+
+        .tantan-btn i {
+            margin-right: 5px;
+        }
+
+        /* 通知 */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            border-radius: 10px;
+            padding: 15px 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            z-index: 1000;
+            transform: translateX(150%);
+            transition: transform 0.3s ease;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification i {
+            margin-right: 10px;
+            font-size: 20px;
+        }
+
+        .notification.success i {
+            color: var(--paw-green);
+        }
+
+        .notification.info i {
+            color: var(--paw-blue);
+        }
+
+        .notification-content {
+            flex: 1;
+        }
+
+        .notification-close {
+            margin-left: 10px;
+            cursor: pointer;
+            color: #aaa;
+        }
+
+        /* Footer */
+        footer {
+            background-color: var(--paw-dark);
+            color: white;
+            padding: 40px 0 20px;
+        }
+
+        .footer-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .footer-column h3 {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: var(--paw-blue);
+        }
+
+        .footer-column ul {
+            list-style: none;
+        }
+
+        .footer-column ul li {
+            margin-bottom: 10px;
+        }
+
+        .footer-column ul li a {
+            color: #ddd;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+
+        .footer-column ul li a:hover {
+            color: var(--paw-pink);
+            padding-left: 5px;
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 14px;
+            color: #aaa;
+        }
+
+        .cta-button {
+            display: inline-block;
+            background: linear-gradient(to right, var(--paw-pink), var(--paw-blue));
+            color: white;
+            padding: 12px 25px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: 500;
+            margin-top: 20px;
+            transition: all 0.3s;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .cta-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        /* 響應式設計 */
+        @media (max-width: 768px) {
+            .hero-content {
+                flex-direction: column;
+            }
+            
+            .hero-text {
+                padding-right: 0;
+                margin-bottom: 30px;
+                text-align: center;
+            }
+            
+            .search-container {
+                margin-left: auto;
+                margin-right: auto;
+            }
+            
+            .trending-tags {
+                justify-content: center;
+            }
+            
+            .tantan-section {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .tantan-avatar {
+                margin-right: 0;
+                margin-bottom: 20px;
+            }
+            
+            .inspiration-section, .history-section {
+                grid-template-columns: 1fr;
+            }
+
+            .section-actions {
+                margin-top: 10px;
+                margin-left: 0;
+                justify-content: flex-end;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header-container {
+                flex-direction: column;
+            }
+            
+            nav ul {
+                margin-top: 15px;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            nav ul li {
+                margin: 5px;
+            }
+            
+            .tab-container {
+                flex-wrap: wrap;
+            }
+            
+            .tab {
+                flex: 1;
+                text-align: center;
+                min-width: 100px;
+                font-size: 14px;
+                padding: 8px 10px;
+            }
+
+            .history-filter {
+                position: static;
+                margin-bottom: 15px;
+                justify-content: flex-end;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="notification">
+        <i class="fas fa-check-circle"></i>
+        <div class="notification-content">操作成功！</div>
+        <div class="notification-close"><i class="fas fa-times"></i></div>
+    </div>
+
+      <!-- 導航欄 -->👣
+      <div id="navbar-container"></div>
+      <script>
+        fetch('navbar.html')
+          .then(response => response.text())
+          .then(data => document.getElementById('navbar-container').innerHTML = data);
+      </script>
+    <section class="hero">
+        <div class="container hero-content">
+            <div class="hero-text">
+                <h1>探索熱門趨勢</h1>
+                <p>掌握最新話題，創造爆紅內容</p>
+                
+                <div class="search-container">
+                    <input type="text" class="search-input" placeholder="輸入關鍵字或主題..." id="searchInput">
+                    <button class="search-button" id="searchBtn"><i class="fas fa-search"></i> 搜尋</button>
+                    <div class="search-history" id="searchHistory">
+                        <!-- 动态生成的搜索历史 -->
+                    </div>
+                </div>
+                
+                <div class="trending-tags">
+                    <div class="trending-tag" style="--delay: 1"><i class="fas fa-fire"></i> # 寵物用品</div>
+                    <div class="trending-tag" style="--delay: 2"><i class="fas fa-arrow-up"></i> # 夏日穿搭</div>
+                    <div class="trending-tag" style="--delay: 3"><i class="fas fa-bolt"></i> # 居家健身</div>
+                    <div class="trending-tag" style="--delay: 4"><i class="fas fa-star"></i> # 電競筆電</div>
+                    <div class="trending-tag" style="--delay: 5"><i class="fas fa-heart"></i> # 減醣食譜</div>
+                </div>
+            </div>
+            
+            <div class="hero-image">
+                <div class="speech-bubble">今天要查什麼熱搜呢？點擊我可以獲得建議！</div>
+                <div class="tantan-character" id="tantanCharacter">
+                    <img src="https://placehold.co/100x100/8BD3DD/001858?text=探探" alt="探探角色">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="container main-content">
+        <!-- 趨勢圖區 -->
+        <section class="trend-section">
+            <div class="section-title">
+                <i class="fas fa-chart-line"></i> "寵物用品" 趨勢分析
+                <div class="section-actions">
+                    <button class="action-btn" id="exportData"><i class="fas fa-download"></i> 匯出數據</button>
+                    <button class="action-btn" id="saveReport"><i class="fas fa-bookmark"></i> 儲存報告</button>
+                    <button class="action-btn" id="shareReport"><i class="fas fa-share-alt"></i> 分享</button>
+                </div>
+            </div>
+            
+            <div class="time-filter">
+                <button class="time-btn active">7天</button>
+                <button class="time-btn">30天</button>
+                <button class="time-btn">90天</button>
+                <button class="time-btn">自訂範圍</button>
+            </div>
+            
+            <div class="tab-container">
+                <div class="tab active" data-tab="trend"><i class="fas fa-chart-line"></i> 搜尋熱度</div>
+                <div class="tab" data-tab="related"><i class="fas fa-brain"></i> 相關搜尋</div>
+                <div class="tab" data-tab="region"><i class="fas fa-globe-asia"></i> 地區比較</div>
+                <div class="tab" data-tab="audience"><i class="fas fa-users"></i> 受眾分析</div>
+            </div>
+            
+            <div class="tab-content active" id="trend-tab">
+                <p>過去30天搜尋熱度變化</p>
+                <div class="chart-container">
+                    <div class="chart-actions">
+                        <button class="chart-btn" title="下載圖表"><i class="fas fa-download"></i></button>
+                        <button class="chart-btn" title="全螢幕"><i class="fas fa-expand"></i></button>
+                        <button class="chart-btn" title="重設視圖"><i class="fas fa-sync-alt"></i></button>
+                    </div>
+                    <canvas id="trendChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="tab-content" id="related-tab">
+                <p>相關搜尋關鍵字與熱度關係</p>
+                <div class="chart-container">
+                    <div id="relatedChart" style="width: 100%; height: 100%;"></div>
+                </div>
+            </div>
+            
+            <div class="tab-content" id="region-tab">
+                <p>各地區搜尋熱度分布</p>
+                <div class="chart-container">
+                    <div id="regionChart" style="width: 100%; height: 100%;"></div>
+                </div>
+            </div>
+
+            <div class="tab-content" id="audience-tab">
+                <p>受眾性別與年齡分布</p>
+                <div class="chart-container">
+                    <canvas id="audienceChart"></canvas>
+                </div>
+            </div>
+        </section>
+        
+        <!-- 延伸靈感區 -->
+        <section>
+            <div class="section-title">
+                <i class="fas fa-lightbulb"></i> AI 創作靈感建議
+                <div class="section-actions">
+                    <button class="action-btn" id="filterPosts"><i class="fas fa-filter"></i> 貼文</button>
+                    <button class="action-btn" id="filterVideos"><i class="fas fa-filter"></i> 影片</button>
+                    <button class="action-btn" id="showAll"><i class="fas fa-eye"></i> 顯示全部</button>
+                </div>
+            </div>
+            
+            <div class="inspiration-section">
+                <div class="inspiration-card">
+                    <button class="save-btn" title="儲存靈感"><i class="far fa-bookmark"></i></button>
+                    <span class="inspiration-type type-post">社群貼文</span>
+                    <h3 class="inspiration-title">寵物用品開箱實測</h3>
+                    <p class="inspiration-desc">比較5款熱門寵物梳毛刷，實際使用效果與寵物反應</p>
+                    <div class="inspiration-stats">
+                        <span><i class="fas fa-fire"></i> 高熱度</span>
+                        <span><i class="fas fa-search"></i> 月搜尋量: 12K</span>
+                    </div>
+                    <a href="script.html" class="inspiration-cta"><i class="fas fa-magic"></i> 帶入腳本工坊</a>
+                </div>
+                
+                <div class="inspiration-card">
+                    <button class="save-btn" title="儲存靈感"><i class="far fa-bookmark"></i></button>
+                    <span class="inspiration-type type-video">短影片</span>
+                    <h3 class="inspiration-title">寵物搞笑用品挑戰</h3>
+                    <p class="inspiration-desc">測試各種新奇寵物用品，記錄寵物有趣反應</p>
+                    <div class="inspiration-stats">
+                        <span><i class="fas fa-fire"></i> 高熱度</span>
+                        <span><i class="fas fa-search"></i> 月搜尋量: 8K</span>
+                    </div>
+                    <a href="script.html" class="inspiration-cta"><i class="fas fa-magic"></i> 帶入腳本工坊</a>
+                </div>
+                
+                <div class="inspiration-card">
+                    <button class="save-btn" title="儲存靈感"><i class="far fa-bookmark"></i></button>
+                    <span class="inspiration-type type-guide">懶人包</span>
+                    <h3 class="inspiration-title">2023寵物用品選購指南</h3>
+                    <p class="inspiration-desc">根據寵物類型推薦最適合的用品與品牌</p>
+                    <div class="inspiration-stats">
+                        <span><i class="fas fa-bolt"></i> 上升中</span>
+                        <span><i class="fas fa-search"></i> 月搜尋量: 15K</span>
+                    </div>
+                    <a href="script.html" class="inspiration-cta"><i class="fas fa-magic"></i> 帶入腳本工坊</a>
+                </div>
+                
+                <div class="inspiration-card">
+                    <button class="save-btn" title="儲存靈感"><i class="far fa-bookmark"></i></button>
+                    <span class="inspiration-type type-seo">SEO長文</span>
+                    <h3 class="inspiration-title">寵物用品市場趨勢分析</h3>
+                    <p class="inspiration-desc">深入探討寵物用品產業發展與消費者行為</p>
+                    <div class="inspiration-stats">
+                        <span><i class="fas fa-chart-line"></i> 穩定</span>
+                        <span><i class="fas fa-search"></i> 月搜尋量: 5K</span>
+                    </div>
+                    <a href="script.html" class="inspiration-cta"><i class="fas fa-magic"></i> 帶入腳本工坊</a>
+                </div>
+            </div>
+        </section>
+        
+        <!-- 熱度下載區 -->
+        <section class="download-section">
+            <div class="achievement-badge"><i class="fas fa-trophy"></i> 初級熱詞獵人</div>
+            <h2 class="download-title">解鎖熱詞貼紙收藏</h2>
+            <p class="download-desc">收集熱門關鍵字貼紙，解鎖成就與專屬獎勵</p>
+            
+            <div class="sticker-container">
+                <div class="sticker unlocked" data-keyword="寵物用品">
+                    <div class="sticker-icon">🐶</div>
+                    <div class="sticker-name">寵物用品</div>
+                    <div class="sticker-value">+85</div>
+                </div>
+                
+                <div class="sticker unlocked" data-keyword="寵物洗澡">
+                    <div class="sticker-icon">🛁</div>
+                    <div class="sticker-name">寵物洗澡</div>
+                    <div class="sticker-value">+72</div>
+                </div>
+                
+                <div class="sticker unlocked" data-keyword="寵物零食">
+                    <div class="sticker-icon">🍗</div>
+                    <div class="sticker-name">寵物零食</div>
+                    <div class="sticker-value">+68</div>
+                </div>
+                
+                <div class="sticker locked" data-keyword="寵物訓練">
+                    <div class="sticker-icon"><i class="fas fa-lock"></i></div>
+                    <div class="sticker-name">寵物訓練</div>
+                    <div class="sticker-value">需+60</div>
+                </div>
+                
+                <div class="sticker locked" data-keyword="寵物鮮食">
+                    <div class="sticker-icon"><i class="fas fa-lock"></i></div>
+                    <div class="sticker-name">寵物鮮食</div>
+                    <div class="sticker-value">需+65</div>
+                </div>
+            </div>
+            
+            <div class="progress-container">
+                <div class="progress-text">
+                    <span>已解鎖 3/10 熱詞貼紙</span>
+                    <span>下一成就: 熱詞達人 (5/10)</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 30%;"></div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- 查詢紀錄區 -->
+        <section>
+            <div class="section-title">
+                <i class="fas fa-history"></i> 搜尋紀錄與排行
+                <div class="section-actions">
+                    <button class="action-btn" id="clearHistory"><i class="fas fa-trash-alt"></i> 清除紀錄</button>
+                </div>
+            </div>
+            
+            <div class="history-section">
+                <div class="history-card">
+                    <div class="history-tabs">
+                        <div class="history-tab active">我的紀錄</div>
+                        <div class="history-tab">本週熱門</div>
+                        <div class="history-tab">收藏關鍵字</div>
+                    </div>
+                    
+                    <div class="history-filter">
+                        <span>排序:</span>
+                        <select class="filter-select" id="historySort">
+                            <option>時間 (新到舊)</option>
+                            <option>時間 (舊到新)</option>
+                            <option>熱度 (高到低)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="history-list">
+                        <div class="history-item">
+                            <span class="history-keyword"><i class="fas fa-star"></i> 寵物用品</span>
+                            <span class="history-count">剛剛</span>
+                        </div>
+                        <div class="history-item">
+                            <span class="history-keyword"><i class="far fa-star"></i> 貓砂推薦</span>
+                            <span class="history-count">2天前</span>
+                        </div>
+                        <div class="history-item">
+                            <span class="history-keyword"><i class="fas fa-star"></i> 狗狗訓練</span>
+                            <span class="history-count">3天前</span>
+                        </div>
+                        <div class="history-item">
+                            <span class="history-keyword"><i class="far fa-star"></i> 寵物保險</span>
+                            <span class="history-count">1週前</span>
+                        </div>
+                        <div class="history-item">
+                            <span class="history-keyword"><i class="far fa-star"></i> 貓咪玩具</span>
+                            <span class="history-count">2週前</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="history-card">
+                    <div class="history-tabs">
+                        <div class="history-tab active">總排行</div>
+                        <div class="history-tab">寵物</div>
+                        <div class="history-tab">美妝</div>
+                        <div class="history-tab">3C</div>
+                    </div>
+                    
+                    <div class="rank-list">
+                        <div class="rank-item">
+                            <div class="rank-number top">1</div>
+                            <div class="rank-keyword">夏日防曬</div>
+                            <div class="rank-value">+95</div>
+                        </div>
+                        <div class="rank-item">
+                            <div class="rank-number top">2</div>
+                            <div class="rank-keyword">旅遊優惠</div>
+                            <div class="rank-value">+89</div>
+                        </div>
+                        <div class="rank-item">
+                            <div class="rank-number top">3</div>
+                            <div class="rank-keyword">電競比賽</div>
+                            <div class="rank-value">+87</div>
+                        </div>
+                        <div class="rank-item">
+                            <div class="rank-number">4</div>
+                            <div class="rank-keyword">寵物用品</div>
+                            <div class="rank-value">+85</div>
+                        </div>
+                        <div class="rank-item">
+                            <div class="rank-number">5</div>
+                            <div class="rank-keyword">減醣食譜</div>
+                            <div class="rank-value">+82</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- 探探小語區 -->
+        <section class="tantan-section">
+            <div class="tantan-avatar" id="tantanAvatar">
+                <img src="https://placehold.co/60x60/8BD3DD/001858?text=探探" alt="探探角色">
+            </div>
+            <div class="tantan-message">
+                <p class="tantan-text">「寵物用品」最近30天搜尋量上升了15%，特別是在25-34歲女性族群中特別受關注！可以考慮針對這個族群設計內容喔～</p>
+                <p class="tantan-tip"><i class="fas fa-lightbulb"></i> 小提示：試著結合「開箱實測」與「優惠資訊」類型的內容，轉換率會更高！</p>
+                
+                <div class="tantan-actions">
+                    <button class="tantan-btn"><i class="fas fa-copy"></i> 複製建議</button>
+                    <button class="tantan-btn"><i class="fas fa-sync-alt"></i> 換一條建議</button>
+                    <button class="tantan-btn"><i class="fas fa-volume-up"></i> 語音朗讀</button>
+                </div>
+            </div>
+        </section>
+    </div>
+    
+    <footer>
+        <div class="container">
+            <div class="footer-container">
+                <div class="footer-column">
+                    <h3>Pawblish</h3>
+                    <ul>
+                        <li><a href="#">關於我們</a></li>
+                        <li><a href="#">服務條款</a></li>
+                        <li><a href="#">隱私政策</a></li>
+                        <li><a href="#">聯絡我們</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-column">
+                    <h3>創作工具</h3>
+                    <ul>
+                        <li><a href="#">腳本工坊</a></li>
+                        <li><a href="#">內容排程</a></li>
+                        <li><a href="#">趨勢分析</a></li>
+                        <li><a href="#">AI 輔助</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-column">
+                    <h3>學習資源</h3>
+                    <ul>
+                        <li><a href="#">教學中心</a></li>
+                        <li><a href="#">成功案例</a></li>
+                        <li><a href="#">部落格</a></li>
+                        <li><a href="#">常見問題</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-column">
+                    <h3>開始創作</h3>
+                    <p>立即使用 Pawblish 打造您的爆紅內容</p>
+                    <a href="#" class="cta-button">免費試用 <i class="fas fa-arrow-right"></i></a>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2023 Pawblish. All Rights Reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // 初始化页面
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初始化图表
+            initCharts();
+            
+            // 初始化事件监听器
+            initEventListeners();
+            
+            // 初始化搜索历史
+            initSearchHistory();
+            
+            // 显示初始通知
+            showNotification('歡迎使用 Pawblish 熱詞分析工具！', 'info');
+        });
+        
+        // 初始化图表
+        function initCharts() {
+            // 趋势图
+            const trendCtx = document.getElementById('trendChart').getContext('2d');
+            const trendChart = new Chart(trendCtx, {
+                type: 'line',
+                data: {
+                    labels: ['6/1', '6/5', '6/10', '6/15', '6/20', '6/25', '6/30', '7/5', '7/10', '7/15', '7/20', '7/25', '7/30'],
+                    datasets: [{
+                        label: '搜尋熱度',
+                        data: [65, 59, 70, 71, 76, 75, 80, 81, 78, 82, 85, 88, 90],
+                        borderColor: '#F582AE',
+                        backgroundColor: 'rgba(245, 130, 174, 0.1)',
+                        borderWidth: 3,
+                        tension: 0.3,
+                        fill: true
+                    }, {
+                        label: '去年同期',
+                        data: [60, 62, 65, 68, 70, 72, 75, 73, 70, 72, 75, 78, 80],
+                        borderColor: '#8BD3DD',
+                        borderWidth: 2,
+                        borderDash: [5, 5],
+                        tension: 0.3,
+                        fill: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            min: 50,
+                            max: 100
+                        }
+                    }
+                }
+            });
+            
+            // 受众分析图
+            const audienceCtx = document.getElementById('audienceChart').getContext('2d');
+            const audienceChart = new Chart(audienceCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['18-24歲', '25-34歲', '35-44歲', '45-54歲', '55+歲'],
+                    datasets: [{
+                        label: '女性',
+                        data: [25, 42, 30, 18, 10],
+                        backgroundColor: '#F582AE',
+                    }, {
+                        label: '男性',
+                        data: [20, 35, 32, 22, 15],
+                        backgroundColor: '#8BD3DD',
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        }
+                    },
+                    scales: {
+                        x: {
+                            stacked: true,
+                        },
+                        y: {
+                            stacked: true,
+                            beginAtZero: true,
+                            max: 100
+                        }
+                    }
+                }
+            });
+            
+            // 相关搜索词云
+            const relatedChart = echarts.init(document.getElementById('relatedChart'));
+            const relatedOption = {
+                tooltip: {},
+                series: [{
+                    type: 'wordCloud',
+                    shape: 'circle',
+                    left: 'center',
+                    top: 'center',
+                    width: '90%',
+                    height: '90%',
+                    right: null,
+                    bottom: null,
+                    sizeRange: [12, 40],
+                    rotationRange: [-45, 45],
+                    rotationStep: 15,
+                    gridSize: 8,
+                    drawOutOfBound: false,
+                    textStyle: {
+                        fontFamily: 'Noto Sans TC',
+                        fontWeight: 'bold',
+                        color: function () {
+                            return 'rgb(' + [
+                                Math.round(Math.random() * 160 + 95),
+                                Math.round(Math.random() * 160 + 95),
+                                Math.round(Math.random() * 160 + 95)
+                            ].join(',') + ')';
+                        }
+                    },
+                    emphasis: {
+                        focus: 'self',
+                        textStyle: {
+                            shadowBlur: 10,
+                            shadowColor: '#333'
+                        }
+                    },
+                    data: [
+                        { name: '寵物梳毛刷', value: 85 },
+                        { name: '貓砂推薦', value: 78 },
+                        { name: '狗狗玩具', value: 72 },
+                        { name: '寵物背包', value: 65 },
+                        { name: '自動餵食器', value: 58 },
+                        { name: '寵物保險', value: 55 },
+                        { name: '貓跳台', value: 52 },
+                        { name: '寵物推車', value: 48 },
+                        { name: '狗狗訓練', value: 45 },
+                        { name: '貓咪飲水機', value: 42 },
+                        { name: '寵物鮮食', value: 40 },
+                        { name: '除蚤項圈', value: 38 }
+                    ]
+                }]
+            };
+            relatedChart.setOption(relatedOption);
+            
+            // 地区分布图
+            const regionChart = echarts.init(document.getElementById('regionChart'));
+            const regionOption = {
+                tooltip: {
+                    trigger: 'item',
+                    formatter: '{b}: {c}'
+                },
+                visualMap: {
+                    min: 50,
+                    max: 100,
+                    text: ['高', '低'],
+                    realtime: false,
+                    calculable: true,
+                    inRange: {
+                        color: ['#F3D2C1', '#F582AE']
+                    }
+                },
+                series: [{
+                    name: '搜尋熱度',
+                    type: 'map',
+                    map: 'Taiwan',
+                    label: {
+                        show: true
+                    },
+                    data: [
+                        { name: '台北市', value: 90 },
+                        { name: '新北市', value: 88 },
+                        { name: '桃園市', value: 82 },
+                        { name: '台中市', value: 85 },
+                        { name: '台南市', value: 78 },
+                        { name: '高雄市', value: 80 },
+                        { name: '基隆市', value: 75 },
+                        { name: '新竹市', value: 83 },
+                        { name: '新竹縣', value: 76 },
+                        { name: '苗栗縣', value: 72 },
+                        { name: '彰化縣', value: 74 },
+                        { name: '南投縣', value: 68 },
+                        { name: '雲林縣', value: 65 },
+                        { name: '嘉義縣', value: 63 },
+                        { name: '嘉義市', value: 70 },
+                        { name: '屏東縣', value: 62 },
+                        { name: '宜蘭縣', value: 71 },
+                        { name: '花蓮縣', value: 66 },
+                        { name: '台東縣', value: 60 },
+                        { name: '澎湖縣', value: 55 },
+                        { name: '金門縣', value: 58 },
+                        { name: '連江縣', value: 50 }
+                    ],
+                    emphasis: {
+                        label: {
+                            show: true
+                        }
+                    }
+                }]
+            };
+            regionChart.setOption(regionOption);
+            
+            // 載入台灣地圖數據
+            fetch('https://cdn.jsdelivr.net/npm/echarts@5.4.3/map/json/province/taiwan.json')
+                .then(response => response.json())
+                .then(data => {
+                    echarts.registerMap('Taiwan', data);
+                    regionChart.setOption(regionOption);
+                });
+        }
+        
+        // 初始化事件监听器
+        function initEventListeners() {
+            // 切換標籤頁
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                    
+                    tab.classList.add('active');
+                    const tabId = tab.getAttribute('data-tab');
+                    document.getElementById(`${tabId}-tab`).classList.add('active');
+                });
+            });
+            
+            // 熱詞標籤點擊事件
+            document.querySelectorAll('.trending-tag').forEach(tag => {
+                tag.addEventListener('click', function() {
+                    const keyword = this.textContent.replace('# ', '').trim();
+                    document.querySelector('.search-input').value = keyword;
+                    performSearch(keyword);
+                });
+            });
+            
+            // 搜索按钮点击事件
+            document.getElementById('searchBtn').addEventListener('click', function() {
+                const keyword = document.getElementById('searchInput').value.trim();
+                if (keyword) {
+                    performSearch(keyword);
+                }
+            });
+            
+            // 回车键搜索
+            document.getElementById('searchInput').addEventListener('keyup', function(e) {
+                if (e.key === 'Enter') {
+                    const keyword = this.value.trim();
+                    if (keyword) {
+                        performSearch(keyword);
+                    }
+                }
+            });
+            
+            // 搜索框获取焦点时显示历史记录
+            document.getElementById('searchInput').addEventListener('focus', function() {
+                document.getElementById('searchHistory').style.display = 'block';
+            });
+            
+            // 点击页面其他地方隐藏历史记录
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('.search-container')) {
+                    document.getElementById('searchHistory').style.display = 'none';
+                }
+            });
+            
+            // 贴纸点击事件
+            document.querySelectorAll('.sticker').forEach(sticker => {
+                sticker.addEventListener('click', function() {
+                    if (this.classList.contains('locked')) {
+                        const keyword = this.getAttribute('data-keyword');
+                        showNotification(`解鎖「${keyword}」貼紙需要達到60熱度！`, 'info');
+                    } else if (this.classList.contains('unlocked')) {
+                        const keyword = this.getAttribute('data-keyword');
+                        showNotification(`已查看「${keyword}」貼紙詳情`, 'success');
+                    }
+                });
+            });
+            
+            // 探探角色点击事件
+            document.getElementById('tantanCharacter').addEventListener('click', function() {
+                const tips = [
+                    "試試搜索「寵物美容趨勢」！",
+                    "最近「貓咪減壓玩具」很熱門喔！",
+                    "夏季寵物降溫用品搜尋量上升中！",
+                    "想找靈感？試試「狗狗訓練挑戰」"
+                ];
+                const tip = tips[Math.floor(Math.random() * tips.length)];
+                document.querySelector('.speech-bubble').textContent = tip;
+                showNotification('探探給了你一條新建議！', 'info');
+            });
+            
+            // 保存灵感按钮
+            document.querySelectorAll('.save-btn').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const icon = this.querySelector('i');
+                    if (icon.classList.contains('far')) {
+                        icon.classList.replace('far', 'fas');
+                        this.style.background = '#F582AE';
+                        this.style.color = 'white';
+                        showNotification('靈感已儲存到收藏夾', 'success');
+                    } else {
+                        icon.classList.replace('fas', 'far');
+                        this.style.background = 'rgba(255,255,255,0.8)';
+                        this.style.color = '';
+                        showNotification('已從收藏夾移除', 'info');
+                    }
+                });
+            });
+            
+            // 时间筛选按钮
+            document.querySelectorAll('.time-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    showNotification('已更新時間範圍篩選', 'info');
+                });
+            });
+            
+            // 导出数据按钮
+            document.getElementById('exportData').addEventListener('click', function() {
+                showNotification('趨勢數據已導出為CSV文件', 'success');
+            });
+            
+            // 保存报告按钮
+            document.getElementById('saveReport').addEventListener('click', function() {
+                showNotification('報告已儲存到我的收藏', 'success');
+            });
+        }
+        
+        // 初始化搜索历史
+        function initSearchHistory() {
+            const history = [
+                { keyword: "寵物食品", time: "昨天" },
+                { keyword: "貓咪玩具", time: "3天前" },
+                { keyword: "狗狗訓練", time: "1週前" },
+                { keyword: "寵物美容", time: "2週前" },
+                { keyword: "寵物保險", time: "3週前" }
+            ];
+            
+            const historyContainer = document.getElementById('searchHistory');
+            historyContainer.innerHTML = '';
+            
+            history.forEach(item => {
+                const historyItem = document.createElement('div');
+                historyItem.className = 'history-item';
+                historyItem.innerHTML = `
+                    <span>${item.keyword}</span>
+                    <span class="remove"><i class="fas fa-times"></i></span>
+                `;
+                
+                historyItem.querySelector('span').addEventListener('click', function() {
+                    document.getElementById('searchInput').value = item.keyword;
+                    performSearch(item.keyword);
+                });
+                
+                historyItem.querySelector('.remove').addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    historyItem.remove();
+                    showNotification('已刪除搜索記錄', 'info');
+                });
+                
+                historyContainer.appendChild(historyItem);
+            });
+        }
+        
+        // 执行搜索
+        function performSearch(keyword) {
+            showNotification(`正在搜索: ${keyword}`, 'info');
+            document.querySelector('.section-title i').nextSibling.textContent = ` "${keyword}" 趨勢分析`;
+            
+            // 添加到历史记录
+            const historyContainer = document.getElementById('searchHistory');
+            const historyItem = document.createElement('div');
+            historyItem.className = 'history-item';
+            historyItem.innerHTML = `
+                <span>${keyword}</span>
+                <span class="remove"><i class="fas fa-times"></i></span>
+            `;
+            
+            historyItem.querySelector('span').addEventListener('click', function() {
+                document.getElementById('searchInput').value = keyword;
+                performSearch(keyword);
+            });
+            
+            historyItem.querySelector('.remove').addEventListener('click', function(e) {
+                e.stopPropagation();
+                historyItem.remove();
+                showNotification('已刪除搜索記錄', 'info');
+            });
+            
+            // 添加到历史记录顶部
+            if (historyContainer.firstChild) {
+                historyContainer.insertBefore(historyItem, historyContainer.firstChild);
+            } else {
+                historyContainer.appendChild(historyItem);
+            }
+            
+            // 隐藏历史记录
+            document.getElementById('searchHistory').style.display = 'none';
+        }
+        
+        // 显示通知
+        function showNotification(message, type = 'info') {
+            const notification = document.querySelector('.notification');
+            const icon = notification.querySelector('i');
+            const content = notification.querySelector('.notification-content');
+            
+            // 设置通知内容
+            content.textContent = message;
+            
+            // 设置图标和颜色
+            notification.className = 'notification';
+            if (type === 'success') {
+                icon.className = 'fas fa-check-circle';
+                notification.classList.add('success');
+            } else {
+                icon.className = 'fas fa-info-circle';
+                notification.classList.add('info');
+            }
+            
+            // 显示通知
+            notification.classList.add('show');
+            
+            // 关闭按钮事件
+            notification.querySelector('.notification-close').addEventListener('click', function() {
+                notification.classList.remove('show');
+            });
+            
+            // 3秒后自动关闭
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+        
+        // 視窗大小改變時重新調整圖表大小
+        window.addEventListener('resize', function() {
+            if (window.trendChart) {
+                window.trendChart.resize();
+            }
+            if (window.relatedChart) {
+                window.relatedChart.resize();
+            }
+            if (window.regionChart) {
+                window.regionChart.resize();
+            }
+        });
+    </script>
+</body>
+</html>

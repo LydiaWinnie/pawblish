@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🐘 咕比智慧客服中心 | Pawblish</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap');
+        
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background: linear-gradient(135deg, #fef6e4 0%, #f3d2c1 100%);
+            color: #001858;
+            min-height: 100vh;
+            scroll-padding-top: var(--navbar-height, 80px);
+        }
+        #navbar-container { height: var(--navbar-height, 70px); display: block; }
+        
+        .gooby-gradient-bg {
+            background: linear-gradient(135deg, #8bd3dd 0%, #f582ae 100%);
+        }
+        
+        .chat-bubble-gooby {
+            background: white;
+            border-radius: 18px 18px 18px 0;
+            position: relative;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .chat-bubble-user {
+            background: #8bd3dd;
+            color: white;
+            border-radius: 18px 18px 0 18px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .gooby-avatar {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #8bd3dd 0%, #f582ae 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(139, 211, 221, 0.4);
+        }
+        
+        .knowledge-card {
+            background: white;
+            border-left: 4px solid #f582ae;
+            transform: scale(0.95);
+            transition: all 0.3s ease;
+        }
+        
+        .knowledge-card:hover {
+            transform: scale(1);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+        }
+        
+        .accordion-item {
+            border-bottom: 1px solid #e2e8f0;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .accordion-content {
+            max-height: 0;
+            transition: max-height 0.3s ease;
+        }
+        
+        .accordion-item.active .accordion-content {
+            max-height: 500px;
+        }
+        
+        .sticker {
+            filter: grayscale(100%);
+            opacity: 0.5;
+            transition: all 0.3s ease;
+        }
+        
+        .sticker.unlocked {
+            filter: grayscale(0);
+            opacity: 1;
+            transform: scale(1.1);
+        }
+        
+        .floating {
+            animation: floating 3s ease-in-out infinite;
+        }
+        
+        @keyframes floating {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-8px); }
+            100% { transform: translateY(0px); }
+        }
+        
+        .pulse {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .gooby-emoji {
+            transition: all 0.3s ease;
+        }
+        
+        .gooby-emoji:hover {
+            transform: scale(1.2) rotate(10deg);
+        }
+        
+        .typewriter {
+            overflow: hidden;
+            border-right: 2px solid #f582ae;
+            white-space: nowrap;
+            animation: typing 3.5s steps(40, end), blink-caret 0.75s step-end infinite;
+        }
+        
+        @keyframes typing {
+            from { width: 0 }
+            to { width: 100% }
+        }
+        
+        @keyframes blink-caret {
+            from, to { border-color: transparent }
+            50% { border-color: #f582ae }
+        }
+    </style>
+</head>
+<body>
+    <!-- 導航列 -->
+    <div id="navbar-container"></div>
+<script>
+  fetch('navbar.html')
+    .then(response => response.text())
+    .then(data => document.getElementById('navbar-container').innerHTML = data);
+</script>
+
+    <!-- 主內容區 -->
+    <div class="max-w-6xl mx-auto px-4 py-8">
+        <!-- 頁面標題 -->
+        <div class="text-center mb-10">
+            <h1 class="text-3xl md:text-4xl font-bold mb-3 flex items-center justify-center">
+                <span class="floating mr-4 text-4xl">🐘</span>
+                🐘 咕比智慧客服中心
+                <span class="floating ml-4 text-4xl">💡</span>
+            </h1>
+            <p class="text-lg text-gray-700 max-w-2xl mx-auto">
+                我是咕比，你的創作好夥伴！有任何問題都可以問我喔～
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- 左側區塊 -->
+            <div class="lg:col-span-2 space-y-8">
+                <!-- 咕比聊天客服 -->
+                <section class="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-white">
+                    <div class="flex items-center mb-6">
+                        <div class="gooby-avatar mr-4">
+                            <span class="text-3xl text-white">🐘</span>
+                        </div>
+                        <div>
+                            <h2 class="text-xl font-bold">咕比 Gooby</h2>
+                            <p class="text-sm text-gray-500">慢條斯理的智慧大象，最愛幫助創作者解決問題</p>
+                        </div>
+                        <div class="ml-auto flex space-x-2">
+                            <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">線上</span>
+                        </div>
+                    </div>
+                    
+                    <!-- 對話區域 -->
+                    <div id="chat-container" class="h-96 overflow-y-auto mb-4 space-y-4 p-2">
+                        <!-- 初始歡迎訊息 -->
+                        <div class="flex items-start">
+                            <div class="mr-3">
+                                <div class="w-8 h-8 bg-pink-500 rounded-full flex items-center justify-center text-white">
+                                    🐘
+                                </div>
+                            </div>
+                            <div class="chat-bubble-gooby px-4 py-3 max-w-xs">
+                                <p>嗨嗨～創作者小夥伴👋，咕比來了！</p>
+                                <p class="mt-2">你今天有什麼問題想問我呢？</p>
+                            </div>
+                        </div>
+                        
+                        <!-- 小知識卡片 -->
+                        <div class="knowledge-card p-4 rounded-lg mb-4">
+                            <div class="flex items-center mb-2">
+                                <span class="bg-pink-100 text-pink-800 px-2 py-1 rounded-full text-xs mr-2">咕比小知識</span>
+                                <span class="text-xs text-gray-500">每日小技巧</span>
+                            </div>
+                            <p class="font-medium">小紅書熱門標籤規則：記得別超過 10 個喔！最佳數量是 5-8 個相關標籤～</p>
+                        </div>
+                    </div>
+                    
+                    <!-- 快速問題按鈕 -->
+                    <div class="grid grid-cols-2 gap-3 mb-4">
+                        <button class="quick-question-btn bg-blue-50 hover:bg-blue-100 px-3 py-2 rounded-lg text-sm text-left transition">
+                            <i class="fas fa-question-circle text-blue-500 mr-2"></i> 怎麼使用靈感轉盤？
+                        </button>
+                        <button class="quick-question-btn bg-pink-50 hover:bg-pink-100 px-3 py-2 rounded-lg text-sm text-left transition">
+                            <i class="fas fa-calendar-alt text-pink-500 mr-2"></i> 我哪天有排程？
+                        </button>
+                        <button class="quick-question-btn bg-blue-50 hover:bg-blue-100 px-3 py-2 rounded-lg text-sm text-left transition">
+                            <i class="fas fa-key text-blue-500 mr-2"></i> 怎麼重新設定密碼？
+                        </button>
+                        <button class="quick-question-btn bg-pink-50 hover:bg-pink-100 px-3 py-2 rounded-lg text-sm text-left transition">
+                            <i class="fas fa-lightbulb text-pink-500 mr-2"></i> 今天不知道寫什麼...
+                        </button>
+                    </div>
+                    
+                    <!-- 輸入區域 -->
+                    <div class="flex">
+                        <input type="text" id="user-input" placeholder="輸入你的問題..." class="flex-1 p-3 rounded-l-lg border border-gray-300 focus:border-pink-500 focus:ring-1 focus:ring-pink-500 outline-none">
+                        <button id="send-btn" class="bg-pink-500 text-white px-4 rounded-r-lg hover:bg-pink-600 transition">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </section>
+                
+                <!-- 導引式問答 -->
+                <section class="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-white">
+                    <h2 class="text-xl font-bold flex items-center mb-6">
+                        <i class="fas fa-map-signs text-pink-500 mr-2"></i>
+                        導引式問答
+                    </h2>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <button class="guide-option bg-blue-50 hover:bg-blue-100 p-4 rounded-lg transition text-left">
+                            <div class="flex items-center mb-2">
+                                <span class="bg-blue-500 text-white p-2 rounded-full mr-3">
+                                    <i class="fas fa-user-graduate"></i>
+                                </span>
+                                <h3 class="font-bold">我是新手，不知道怎麼用</h3>
+                            </div>
+                            <p class="text-sm text-gray-600">讓咕比帶你一步步了解平台功能～</p>
+                        </button>
+                        
+                        <button class="guide-option bg-pink-50 hover:bg-pink-100 p-4 rounded-lg transition text-left">
+                            <div class="flex items-center mb-2">
+                                <span class="bg-pink-500 text-white p-2 rounded-full mr-3">
+                                    <i class="fas fa-lightbulb"></i>
+                                </span>
+                                <h3 class="font-bold">想寫文章，但沒靈感</h3>
+                            </div>
+                            <p class="text-sm text-gray-600">咕比有滿滿的靈感點子可以分享給你！</p>
+                        </button>
+                        
+                        <button class="guide-option bg-purple-50 hover:bg-purple-100 p-4 rounded-lg transition text-left">
+                            <div class="flex items-center mb-2">
+                                <span class="bg-purple-500 text-white p-2 rounded-full mr-3">
+                                    <i class="fas fa-chart-line"></i>
+                                </span>
+                                <h3 class="font-bold">想查熱度和趨勢</h3>
+                            </div>
+                            <p class="text-sm text-gray-600">了解最新熱門話題與關鍵字分析</p>
+                        </button>
+                        
+                        <button class="guide-option bg-green-50 hover:bg-green-100 p-4 rounded-lg transition text-left">
+                            <div class="flex items-center mb-2">
+                                <span class="bg-green-500 text-white p-2 rounded-full mr-3">
+                                    <i class="fas fa-calendar-check"></i>
+                                </span>
+                                <h3 class="font-bold">想安排創作日程</h3>
+                            </div>
+                            <p class="text-sm text-gray-600">規劃你的內容發佈時間與進度</p>
+                        </button>
+                    </div>
+                </section>
+            </div>
+            
+            <!-- 右側區塊 -->
+            <div class="space-y-8">
+                <!-- 咕比小教室 -->
+                <section class="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-white">
+                    <h2 class="text-xl font-bold flex items-center mb-6">
+                        <i class="fas fa-graduation-cap text-pink-500 mr-2"></i>
+                        咕比小教室
+                    </h2>
+                    
+                    <div class="space-y-4">
+                        <div class="knowledge-card p-4 rounded-lg">
+                            <div class="flex items-center mb-2">
+                                <span class="bg-pink-100 text-pink-800 px-2 py-1 rounded-full text-xs mr-2">平台技巧</span>
+                                <span class="text-xs text-gray-500">1天前更新</span>
+                            </div>
+                            <p class="font-medium">早上 8～10 點、晚上 9～11 點是 IG 貼文高流量時段！</p>
+                        </div>
+                        
+                        <div class="knowledge-card p-4 rounded-lg">
+                            <div class="flex items-center mb-2">
+                                <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs mr-2">標題技巧</span>
+                                <span class="text-xs text-gray-500">3天前更新</span>
+                            </div>
+                            <p class="font-medium">腳本標題最好包含動詞＋數字：例如「3招教你拍出電影感！」</p>
+                        </div>
+                        
+                        <div class="knowledge-card p-4 rounded-lg">
+                            <div class="flex items-center mb-2">
+                                <span class="bg-purple-100 text-purple-800 px-2 py-1 rounded-full text-xs mr-2">SEO技巧</span>
+                                <span class="text-xs text-gray-500">1週前更新</span>
+                            </div>
+                            <p class="font-medium">文章前100字內放入關鍵字，能提升搜尋排名喔～</p>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4 text-center">
+                        <button class="text-pink-500 font-medium hover:text-pink-700 transition">
+                            <i class="fas fa-book mr-2"></i>查看所有知識卡
+                        </button>
+                    </div>
+                </section>
+                
+                <!-- 咕比獎勵系統 -->
+                <section class="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-white">
+                    <h2 class="text-xl font-bold flex items-center mb-6">
+                        <i class="fas fa-trophy text-pink-500 mr-2"></i>
+                        咕比獎勵系統
+                    </h2>
+                    
+                    <div class="mb-6">
+                        <div class="flex justify-between mb-2">
+                            <span class="font-medium">客服使用次數: 3次</span>
+                            <span class="font-medium">下一獎勵: 5次</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-3">
+                            <div class="bg-pink-500 h-3 rounded-full" style="width: 60%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-3 gap-4 mb-6">
+                        <div class="text-center">
+                            <div class="sticker unlocked mx-auto mb-2 text-4xl">📚</div>
+                            <span class="text-xs">閱讀3則知識</span>
+                        </div>
+                        <div class="text-center">
+                            <div class="sticker mx-auto mb-2 text-4xl">🏆</div>
+                            <span class="text-xs">使用5次客服</span>
+                        </div>
+                        <div class="text-center">
+                            <div class="sticker mx-auto mb-2 text-4xl">🔍</div>
+                            <span class="text-xs">提問10次</span>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center">
+                        <button class="bg-pink-500 text-white px-4 py-2 rounded-lg text-sm hover:bg-pink-600 transition">
+                            <i class="fas fa-gift mr-2"></i>查看所有獎勵
+                        </button>
+                    </div>
+                </section>
+                
+                <!-- FAQ 展開區 -->
+                <section class="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-white">
+                    <h2 class="text-xl font-bold flex items-center mb-6">
+                        <i class="fas fa-question-circle text-pink-500 mr-2"></i>
+                        常見問題 FAQ
+                    </h2>
+                    
+                    <div class="space-y-3">
+                        <div class="accordion-item">
+                            <button class="accordion-header w-full text-left font-medium p-3 bg-gray-50 rounded-lg flex justify-between items-center">
+                                <span>怎麼使用靈感轉盤？</span>
+                                <i class="fas fa-chevron-down transition-transform"></i>
+                            </button>
+                            <div class="accordion-content px-3">
+                                <p class="py-3 text-sm text-gray-600">前往「腳本工坊」頁面，點擊中央的轉盤圖示，咕比會隨機給你一個創作靈感主題喔！也可以選擇不同類型的靈感～</p>
+                            </div>
+                        </div>
+                        
+                        <div class="accordion-item">
+                            <button class="accordion-header w-full text-left font-medium p-3 bg-gray-50 rounded-lg flex justify-between items-center">
+                                <span>如何更改已排程的內容？</span>
+                                <i class="fas fa-chevron-down transition-transform"></i>
+                            </button>
+                            <div class="accordion-content px-3">
+                                <p class="py-3 text-sm text-gray-600">在「內容排程」頁面找到你想修改的項目，點擊右側的編輯按鈕，就可以調整發佈時間或內容囉！</p>
+                            </div>
+                        </div>
+                        
+                        <div class="accordion-item">
+                            <button class="accordion-header w-full text-left font-medium p-3 bg-gray-50 rounded-lg flex justify-between items-center">
+                                <span>為什麼按下查詢沒反應？</span>
+                                <i class="fas fa-chevron-down transition-transform"></i>
+                            </button>
+                            <div class="accordion-content px-3">
+                                <p class="py-3 text-sm text-gray-600">可能是網路連線不穩定，請檢查你的網路狀態後重新整理頁面。如果問題持續，可以聯絡我們的技術團隊～</p>
+                            </div>
+                        </div>
+                        
+                        <div class="accordion-item">
+                            <button class="accordion-header w-full text-left font-medium p-3 bg-gray-50 rounded-lg flex justify-between items-center">
+                                <span>有哪些快速鍵可以使用？</span>
+                                <i class="fas fa-chevron-down transition-transform"></i>
+                            </button>
+                            <div class="accordion-content px-3">
+                                <p class="py-3 text-sm text-gray-600">
+                                    • Ctrl+S: 快速儲存<br>
+                                    • Ctrl+P: 預覽內容<br>
+                                    • Ctrl+Enter: 發佈內容<br>
+                                    • Ctrl+F: 搜尋功能
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+        
+        <!-- 咕比語錄區 -->
+        <section class="mt-10 bg-pink-50 rounded-2xl p-6 shadow-lg border border-pink-100">
+            <div class="text-center">
+                <div class="gooby-emoji text-5xl mb-4">🐘</div>
+                <p class="text-xl font-medium italic text-pink-800">
+                    "創作很像旅程，今天也邁開一步了呢～"
+                </p>
+                <p class="mt-2 text-sm text-pink-600">— 咕比 Gooby</p>
+            </div>
+        </section>
+    </div>
+    
+    <!-- 頁尾 -->
+    <footer class="bg-gray-50 mt-12 py-8 px-6">
+        <div class="max-w-6xl mx-auto">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="flex items-center mb-4 md:mb-0">
+                    <span class="text-3xl mr-2">🐾</span>
+                    <h2 class="text-xl font-bold">Pawblish</h2>
+                </div>
+                
+                <div class="flex flex-wrap justify-center gap-6 text-sm">
+                    <a href="#" class="hover:text-pink-500 transition">關於我們</a>
+                    <a href="#" class="hover:text-pink-500 transition">使用條款</a>
+                    <a href="#" class="hover:text-pink-500 transition">隱私政策</a>
+                    <a href="#" class="hover:text-pink-500 transition">聯絡我們</a>
+                </div>
+            </div>
+            
+            <div class="text-center mt-6 text-sm text-gray-500">
+                © 2023 Pawblish 寵物創作平台 • 用愛創作，用心分享
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // 對話功能
+        const chatContainer = document.getElementById('chat-container');
+        const userInput = document.getElementById('user-input');
+        const sendBtn = document.getElementById('send-btn');
+        
+        // 預設問題與回答
+        const qaPairs = {
+            "怎麼使用靈感轉盤？": {
+                answer: "嗨嗨～創作者小夥伴👋，咕比來了！<br><br>如果你是要寫短影片腳本，可以先去腳本工坊，點選『情境靈感轉盤』試試看唷～轉盤會隨機給你一個創作主題，超級方便的！<br><br>咕比相信你做得到！也可以考慮把靈感存進排程曆唷📅",
+                emoji: "🎡"
+            },
+            "我哪天有排程？": {
+                answer: "呼～這題我最拿手啦！<br><br>你可以到「內容排程」頁面查看完整的月曆視圖，上面會標記所有已排程的日子。點擊特定日期還能看到詳細內容呢～<br><br>需要咕比帶你去看排程表嗎？",
+                emoji: "📅"
+            },
+            "怎麼重新設定密碼？": {
+                answer: "這個我知道喔～你跟我來就對了呢！<br><br>請到「會員中心」>「帳號設定」>「修改密碼」，輸入你的舊密碼和新密碼就可以囉！記得新密碼要包含英文和數字才安全～<br><br>如果忘記舊密碼，可以點選「忘記密碼」用信箱重設唷！",
+                emoji: "🔑"
+            },
+            "今天不知道寫什麼...": {
+                answer: "別擔心～咕比這裡有滿滿的靈感！<br><br>你可以試試這些方向：<br>1. 分享寵物的日常生活趣事<br>2. 教學類的「如何幫狗狗洗澡」<br>3. 產品開箱或使用心得<br>4. 節日相關的主題內容<br><br>或者去靈感轉盤讓咕比幫你隨機選一個主題吧！",
+                emoji: "💡"
+            },
+            "default": {
+                answer: "嗯～咕比可能需要多一點資訊才能幫你解答呢！<br><br>你可以試著：<br>1. 更詳細描述你的問題<br>2. 使用下方的快速問題按鈕<br>3. 查看右側的FAQ常見問題<br><br>咕比會在這裡等你唷～",
+                emoji: "🤔"
+            }
+        };
+        
+        // 發送訊息函數
+        function sendMessage() {
+            const message = userInput.value.trim();
+            if (message === '') return;
+            
+            // 添加用戶訊息
+            addUserMessage(message);
+            userInput.value = '';
+            
+            // 模擬咕比思考
+            setTimeout(() => {
+                addGoobyResponse(message);
+            }, 1000);
+        }
+        
+        // 添加用戶訊息
+        function addUserMessage(message) {
+            const messageElement = document.createElement('div');
+            messageElement.className = 'flex items-start justify-end';
+            messageElement.innerHTML = `
+                <div class="chat-bubble-user px-4 py-3 max-w-xs">
+                    ${message}
+                </div>
+                <div class="ml-3">
+                    <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white">
+                        <i class="fas fa-user"></i>
+                    </div>
+                </div>
+            `;
+            chatContainer.appendChild(messageElement);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+        
+        // 添加咕比回應
+        function addGoobyResponse(message) {
+            const response = qaPairs[message] || qaPairs['default'];
+            
+            const messageElement = document.createElement('div');
+            messageElement.className = 'flex items-start';
+            messageElement.innerHTML = `
+                <div class="mr-3">
+                    <div class="w-8 h-8 bg-pink-500 rounded-full flex items-center justify-center text-white">
+                        ${response.emoji}
+                    </div>
+                </div>
+                <div class="chat-bubble-gooby px-4 py-3 max-w-xs">
+                    ${response.answer}
+                </div>
+            `;
+            chatContainer.appendChild(messageElement);
+            
+            // 隨機添加咕比小知識
+            if (Math.random() > 0.5) {
+                const knowledgeCards = [
+                    "小紅書最佳發文時間: 中午12-14點，晚上20-22點",
+                    "標題加入數字能提高30%點擊率，例如「5個技巧...」",
+                    "每段文字最好不超過3行，手機閱讀體驗最佳",
+                    "使用emoji能增加親切感，但每篇不要超過5個",
+                    "前3張圖片最重要，決定用戶是否繼續閱讀"
+                ];
+                
+                const randomKnowledge = knowledgeCards[Math.floor(Math.random() * knowledgeCards.length)];
+                
+                const knowledgeElement = document.createElement('div');
+                knowledgeElement.className = 'knowledge-card p-4 rounded-lg mt-4';
+                knowledgeElement.innerHTML = `
+                    <div class="flex items-center mb-2">
+                        <span class="bg-pink-100 text-pink-800 px-2 py-1 rounded-full text-xs mr-2">咕比小知識</span>
+                        <span class="text-xs text-gray-500">每日小技巧</span>
+                    </div>
+                    <p class="font-medium">${randomKnowledge}</p>
+                `;
+                chatContainer.appendChild(knowledgeElement);
+            }
+            
+            // 添加咕比語錄
+            const quotes = [
+                "創作很像旅程，今天也邁開一步了呢～🐘",
+                "不一定要完美，但一定要上線！",
+                "每次查詢，都是靈感的起點～",
+                "別忘了喝水，靈感也要灌溉的唷～",
+                "休息是為了走更長遠的創作路！",
+                "你的內容獨一無二，就像每隻寵物都特別～"
+            ];
+            
+            const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
+            
+            const quoteElement = document.createElement('div');
+            quoteElement.className = 'flex items-start mt-4';
+            quoteElement.innerHTML = `
+                <div class="mr-3">
+                    <div class="w-8 h-8 bg-pink-500 rounded-full flex items-center justify-center text-white">
+                        🐘
+                    </div>
+                </div>
+                <div class="chat-bubble-gooby px-4 py-3 max-w-xs">
+                    <p class="italic">"${randomQuote}"</p>
+                </div>
+            `;
+            chatContainer.appendChild(quoteElement);
+            
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+            
+            // 更新使用次數
+            updateUsageCount();
+        }
+        
+        // 快速問題按鈕
+        document.querySelectorAll('.quick-question-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const question = this.textContent.trim();
+                userInput.value = question;
+                sendMessage();
+            });
+        });
+        
+        // 導引式問答
+        document.querySelectorAll('.guide-option').forEach(button => {
+            button.addEventListener('click', function() {
+                const option = this.querySelector('h3').textContent;
+                
+                // 添加用戶選擇
+                addUserMessage(option);
+                
+                // 模擬咕比回應
+                setTimeout(() => {
+                    let response = '';
+                    let emoji = '🐘';
+                    
+                    switch(option) {
+                        case '我是新手，不知道怎麼用':
+                            response = "太好了！新手小夥伴～咕比最愛帶新朋友認識環境了！<br><br>建議你先從「小爪首頁」的導覽開始，那裡有簡單的3分鐘教學影片。或者你想直接體驗某個功能呢？";
+                            emoji = "👋";
+                            break;
+                        case '想寫文章，但沒靈感':
+                            response = "靈感不足嗎？咕比這裡有滿滿的點子！<br><br>1. 試試「靈感轉盤」隨機抽主題<br>2. 查看「熱門趨勢」了解現在流行什麼<br>3. 逛逛「靈感暫存區」找找之前的想法<br><br>哪個聽起來最有趣呢？";
+                            emoji = "💡";
+                            break;
+                        case '想查熱度和趨勢':
+                            response = "呼～熱度查詢我最拿手！<br><br>請到「熱門趨勢」頁面，輸入你想查的關鍵字，咕比會顯示搜尋熱度曲線和相關關鍵字建議～<br><br>需要我帶你去看熱度分析嗎？";
+                            emoji = "📊";
+                            break;
+                        case '想安排創作日程':
+                            response = "安排日程很重要呢～<br><br>你可以在「內容排程」頁面看到月曆視圖，點擊日期就能新增排程。也可以從「靈感暫存區」直接拖曳到月曆上喔！<br><br>想現在去排程頁面看看嗎？";
+                            emoji = "📅";
+                            break;
+                    }
+                    
+                    const messageElement = document.createElement('div');
+                    messageElement.className = 'flex items-start';
+                    messageElement.innerHTML = `
+                        <div class="mr-3">
+                            <div class="w-8 h-8 bg-pink-500 rounded-full flex items-center justify-center text-white">
+                                ${emoji}
+                            </div>
+                        </div>
+                        <div class="chat-bubble-gooby px-4 py-3 max-w-xs">
+                            ${response}
+                        </div>
+                    `;
+                    chatContainer.appendChild(messageElement);
+                    chatContainer.scrollTop = chatContainer.scrollHeight;
+                    
+                    // 更新使用次數
+                    updateUsageCount();
+                }, 1000);
+            });
+        });
+        
+        // 手風琴效果
+        document.querySelectorAll('.accordion-header').forEach(header => {
+            header.addEventListener('click', function() {
+                const item = this.parentElement;
+                const isActive = item.classList.contains('active');
+                
+                // 關閉所有其他項目
+                document.querySelectorAll('.accordion-item').forEach(el => {
+                    el.classList.remove('active');
+                    el.querySelector('.accordion-header i').classList.remove('fa-chevron-up');
+                    el.querySelector('.accordion-header i').classList.add('fa-chevron-down');
+                });
+                
+                // 切換當前項目
+                if (!isActive) {
+                    item.classList.add('active');
+                    this.querySelector('i').classList.remove('fa-chevron-down');
+                    this.querySelector('i').classList.add('fa-chevron-up');
+                }
+            });
+        });
+        
+        // 更新使用次數
+        function updateUsageCount() {
+            const usageCount = document.querySelectorAll('.chat-bubble-gooby').length;
+            const progressBar = document.querySelector('.bg-pink-500');
+            const percentage = Math.min(100, (usageCount / 5) * 100);
+            progressBar.style.width = `${percentage}%`;
+            
+            // 解鎖貼紙
+            if (usageCount >= 3) {
+                document.querySelectorAll('.sticker')[0].classList.add('unlocked');
+            }
+            if (usageCount >= 5) {
+                document.querySelectorAll('.sticker')[1].classList.add('unlocked');
+            }
+            if (usageCount >= 10) {
+                document.querySelectorAll('.sticker')[2].classList.add('unlocked');
+            }
+        }
+        
+        // 事件監聽
+        sendBtn.addEventListener('click', sendMessage);
+        userInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+        
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 隨機咕比表情
+            const emojis = ['🐘', '📚', '🔍', '💡', '📝', '📅'];
+            const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
+            document.querySelector('.gooby-emoji').textContent = randomEmoji;
+        });
+    </script>
+</body>
+</html>
